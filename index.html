@@ -1,0 +1,1314 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>マーケニスタ AIコンシェルジュ（仮）｜診断デモ 統合版</title>
+<style>
+  :root{
+    /* マーケニスタ トンマナ：オレンジ＋クリーム＋温かい白（旧navy/emerald変数名は流用） */
+    --navy:#e06a22;        /* 主役オレンジ（旧navy=見出し・アクセント） */
+    --navy-deep:#c2551a;   /* 濃いオレンジ */
+    --navy-soft:#f0975a;   /* 淡いオレンジ */
+    --emerald:#5b9e70;     /* 自然な緑（成長・完了。旧emeraldのネオンをやめ落ち着かせる） */
+    --emerald-soft:#e6f2e9;
+    --gold:#e89a2e;        /* ロゴのゴールド */
+    --bg:#faf7f0;          /* 温かいオフホワイト */
+    --card:#ffffff;
+    --cream:#f9f6ec;       /* クリーム（セクション背景） */
+    --ink:#333333;         /* チャコール文字 */
+    --muted:#8a7f72;       /* 温かいグレー */
+    --line:#ece4d6;        /* 温かい罫線 */
+    --amber:#e89a2e;
+    --shadow:0 6px 20px rgba(120,80,30,.08);
+    --shadow-soft:0 2px 8px rgba(120,80,30,.06);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    font-family:"Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;
+    background:var(--bg);
+    color:var(--ink);
+    line-height:1.7;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:960px;margin:0 auto;padding:0 16px 48px;}
+
+  /* ---------- 画面切替 ---------- */
+  .screen{display:none;}
+  .screen.active{display:block;animation:fadeIn .35s ease;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+
+  /* ---------- プラン切替バー（デモ用） ---------- */
+  .plan-bar{position:sticky;top:0;z-index:60;background:linear-gradient(135deg,#c2551a,#e06a22);color:#fff;padding:8px 14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:center;box-shadow:0 2px 10px rgba(0,0,0,.18);}
+  .plan-bar .pl-label{font-weight:700;font-size:12px;opacity:.8;letter-spacing:.04em;}
+  .plan-bar .pl-btns{display:flex;gap:5px;background:rgba(255,255,255,.12);border-radius:11px;padding:3px;}
+  .plan-bar .pl-btn{border:none;background:none;color:#cfe0f5;padding:7px 14px;border-radius:8px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;}
+  .plan-bar .pl-btn.on{background:#5b9e70;color:#06281f;}
+  .plan-bar .pl-note{font-size:12px;opacity:.95;}
+  .plan-bar .pl-price{font-weight:800;color:#ffd479;}
+  .magic-only{display:none;}
+  body.plan-magic .full-only{display:none !important;}
+  body.plan-magic .magic-only{display:block;}
+  .link-note{background:#eaf6ff;border:1px solid #b6e0ff;border-radius:12px;padding:11px 14px;margin:14px 0 0;font-size:13px;color:#e06a22;display:flex;gap:9px;align-items:flex-start;}
+  .link-note .lk-ic{font-size:18px;}
+  .detect-card{background:linear-gradient(135deg,#fff7ed,#fef3c7);border:1px solid #fcd9a6;border-radius:14px;padding:14px 16px;display:flex;gap:11px;align-items:flex-start;}
+  .detect-card .dt-ic{font-size:22px;}
+  .detect-card .dt-title{font-weight:800;color:#b45309;font-size:14px;}
+  .detect-card .dt-body{font-size:12.5px;color:#7c5510;margin-top:2px;}
+  /* 上位診断 SWOT */
+  .swot-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px;}
+  .swot-cell{border-radius:12px;padding:11px 13px;border:1px solid var(--line);}
+  .swot-cell.s{background:#eafaf3;border-color:#bfe9d5;}
+  .swot-cell.w{background:#fdeef0;border-color:#f6cdd4;}
+  .swot-cell.o{background:#eef4fd;border-color:#c9dcf5;}
+  .swot-cell.t{background:#fef6e9;border-color:#f6dfb3;}
+  .swot-cell .sw-h{font-weight:800;font-size:13px;margin-bottom:4px;}
+  .swot-cell .sw-h small{font-weight:600;color:var(--muted);font-size:10px;margin-left:4px;}
+  .swot-cell ul{margin:0;padding-left:16px;font-size:12px;color:#40536a;}
+  .swot-cell li{margin:2px 0;}
+  .cross-swot{margin-top:12px;background:#f7faff;border:1px solid #dbe7f6;border-radius:12px;padding:12px 14px;}
+  .cross-swot .cs-title{font-weight:800;font-size:13px;color:var(--navy);margin-bottom:6px;}
+  .cross-swot .cs-row{font-size:12.5px;color:#3a4d63;margin:4px 0;}
+  .swot-note{margin-top:11px;font-size:12px;color:var(--muted);background:var(--cream);border-radius:10px;padding:9px 12px;}
+  @media(max-width:520px){.swot-grid{grid-template-columns:1fr;}}
+  /* 上位診断トグル＋講師FB */
+  .ldx-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+  .ldx-sub{font-size:12px;color:var(--muted);margin-top:2px;}
+  .ldx-toggle{border:1.5px solid var(--navy);background:#fff;color:var(--navy);border-radius:999px;padding:9px 18px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:8px;transition:all .15s;}
+  .ldx-toggle:hover{background:var(--navy);color:#fff;}
+  .ldx-toggle.open{background:var(--navy);color:#fff;}
+  .ldx-body{margin-top:16px;}
+  .teacher-fb{margin-top:16px;border-top:1px dashed var(--line);padding-top:14px;}
+  .tf-title{font-weight:700;font-size:13.5px;color:var(--ink);}
+  .tf-hint{font-weight:500;font-size:11.5px;color:var(--muted);}
+  .tf-log{margin-top:10px;display:flex;flex-direction:column;gap:8px;}
+  .tf-item{background:var(--cream);border-left:3px solid var(--gold);border-radius:8px;padding:9px 12px;}
+  .tf-meta{font-size:11px;color:var(--muted);font-weight:600;}
+  .tf-text{font-size:13px;color:#40382f;margin-top:2px;}
+  .tf-input{width:100%;margin-top:10px;border:1px solid var(--line);border-radius:9px;padding:10px 12px;font-size:13px;font-family:inherit;resize:vertical;min-height:56px;color:var(--ink);}
+  .tf-input:focus{outline:none;border-color:var(--navy);}
+  .tf-add{margin-top:8px;background:var(--navy);color:#fff;border:none;border-radius:9px;padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;}
+
+  /* ---------- ヘッダー ---------- */
+  header.top{
+    background:#ffffff;
+    color:var(--ink);border-bottom:3px solid var(--navy);
+    padding:24px 0 26px;
+  }
+  .top-inner{max-width:960px;margin:0 auto;padding:0 20px;
+    display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;}
+  .brand{display:flex;align-items:center;gap:12px;}
+  .brand .logo{
+    width:44px;height:44px;border-radius:12px;
+    background:linear-gradient(135deg,var(--gold),var(--navy));color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;
+    font-size:22px;box-shadow:0 4px 10px rgba(224,106,34,.3);
+  }
+  .brand h1{font-size:19px;font-weight:800;letter-spacing:.02em;}
+  .brand p{font-size:12px;color:var(--muted);font-weight:500;}
+  .user-chip{
+    display:flex;align-items:center;gap:12px;
+    background:var(--cream);border:1px solid var(--line);
+    border-radius:14px;padding:10px 16px;
+  }
+  .user-chip .avatar{
+    width:40px;height:40px;border-radius:50%;
+    background:var(--emerald);display:flex;align-items:center;justify-content:center;
+    font-size:18px;font-weight:800;color:#1f4a33;
+  }
+  .user-chip .u-name{font-size:15px;font-weight:700;line-height:1.3;}
+  .user-chip .u-sub{font-size:11px;color:var(--muted);}
+
+  /* ---------- 共通カード ---------- */
+  section{margin-top:20px;}
+  .card{
+    background:var(--card);border-radius:18px;box-shadow:var(--shadow);
+    padding:22px;border:1px solid var(--line);
+  }
+  .card-title{
+    font-size:14px;font-weight:800;color:var(--navy);
+    display:flex;align-items:center;gap:8px;margin-bottom:16px;
+    letter-spacing:.02em;
+  }
+  .card-title .ic{font-size:17px;}
+
+  /* ---------- ウェルカム画面 ---------- */
+  .welcome-hero{
+    background:linear-gradient(150deg,#ffffff 0%,var(--cream) 100%);
+    color:var(--ink);border-top:4px solid var(--navy);border-radius:22px;box-shadow:var(--shadow);
+    padding:52px 28px 46px;text-align:center;margin-top:26px;
+    position:relative;overflow:hidden;
+  }
+  .welcome-hero::after{
+    content:"";position:absolute;right:-70px;top:-70px;width:220px;height:220px;
+    border-radius:50%;background:rgba(91,158,112,.18);
+  }
+  .welcome-hero::before{
+    content:"";position:absolute;left:-60px;bottom:-80px;width:200px;height:200px;
+    border-radius:50%;background:rgba(255,255,255,.05);
+  }
+  .welcome-logo{
+    width:72px;height:72px;border-radius:20px;margin:0 auto 18px;
+    background:linear-gradient(135deg,var(--gold),var(--navy));color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;
+    font-size:34px;box-shadow:0 8px 20px rgba(224,106,34,.32);position:relative;z-index:1;
+  }
+  .welcome-hero h2{font-size:25px;font-weight:900;letter-spacing:.02em;position:relative;z-index:1;}
+  .welcome-hero .kakko{font-size:14px;font-weight:600;color:#c3b39c;}
+  .welcome-hero .lead{
+    margin-top:14px;font-size:15px;color:var(--muted);font-weight:600;position:relative;z-index:1;
+  }
+  .welcome-hero .time-note{
+    display:inline-flex;align-items:center;gap:7px;margin-top:12px;
+    background:var(--cream);border:1px solid var(--line);
+    border-radius:999px;padding:7px 18px;font-size:13px;font-weight:700;color:var(--navy);
+    position:relative;z-index:1;
+  }
+  .welcome-points{
+    display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:26px auto 0;
+    max-width:640px;position:relative;z-index:1;
+  }
+  .wpoint{
+    background:var(--cream);border:1px solid var(--line);
+    border-radius:14px;padding:14px 10px;font-size:12px;font-weight:700;color:var(--ink);
+  }
+  .wpoint .em{font-size:22px;display:block;margin-bottom:4px;}
+  .btn-start{
+    margin-top:32px;display:inline-flex;align-items:center;gap:10px;
+    background:var(--navy);color:#fff;border:none;cursor:pointer;
+    font-size:17px;font-weight:900;letter-spacing:.04em;
+    padding:18px 52px;border-radius:999px;
+    box-shadow:0 10px 26px rgba(224,106,34,.32);
+    transition:all .18s ease;position:relative;z-index:1;
+    font-family:inherit;
+  }
+  .btn-start:hover{transform:translateY(-2px);box-shadow:0 14px 30px rgba(91,158,112,.5);}
+
+  /* ---------- 設問ウィザード ---------- */
+  .quiz-head{margin-top:26px;}
+  .quiz-step-label{
+    display:flex;align-items:center;justify-content:space-between;
+    font-size:13px;font-weight:800;color:var(--navy);margin-bottom:8px;
+  }
+  .quiz-step-label .pct{color:var(--emerald);}
+  .qbar-track{height:10px;background:#dde5ee;border-radius:999px;overflow:hidden;}
+  .qbar-fill{
+    height:100%;width:20%;background:linear-gradient(90deg,var(--emerald),#34d399);
+    border-radius:999px;transition:width .35s ease;
+  }
+  .quiz-card{margin-top:18px;}
+  .q-block{margin-bottom:26px;}
+  .q-block:last-child{margin-bottom:6px;}
+  .q-title{
+    font-size:16px;font-weight:800;color:var(--navy);margin-bottom:4px;
+    display:flex;align-items:center;gap:8px;
+  }
+  .q-title .qic{font-size:18px;}
+  .q-sub{font-size:12px;color:var(--muted);margin-bottom:12px;}
+  .q-note{
+    font-size:11px;color:var(--muted);margin-top:10px;
+    background:#f4f8fc;border:1px dashed #cbd6e2;border-radius:10px;
+    padding:8px 12px;display:inline-block;
+  }
+
+  /* 選択肢（単一選択） */
+  .opt-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;}
+  .opt-grid.cols4{grid-template-columns:repeat(4,1fr);}
+  .opt-grid.cols3{grid-template-columns:repeat(3,1fr);}
+  .opt{
+    border:2px solid var(--line);border-radius:14px;background:#fff;
+    padding:15px 12px;font-size:14px;font-weight:700;color:var(--ink);
+    cursor:pointer;text-align:center;transition:all .15s ease;
+    font-family:inherit;line-height:1.5;
+  }
+  .opt small{display:block;font-size:11px;color:var(--muted);font-weight:600;margin-top:2px;}
+  .opt:hover{border-color:var(--emerald);transform:translateY(-1px);box-shadow:var(--shadow-soft);}
+  .opt.selected{
+    background:var(--emerald);border-color:var(--emerald);color:#fff;
+    box-shadow:0 6px 16px rgba(91,158,112,.35);
+  }
+  .opt.selected small{color:#e5fff5;}
+
+  /* 複数選択チップ */
+  .chip-wrap{display:flex;flex-wrap:wrap;gap:10px;}
+  .chip{
+    border:2px solid var(--line);border-radius:999px;background:#fff;
+    padding:11px 20px;font-size:13px;font-weight:700;color:var(--ink);
+    cursor:pointer;transition:all .15s ease;font-family:inherit;
+    display:inline-flex;align-items:center;gap:7px;
+  }
+  .chip::before{content:"＋";font-weight:900;color:#c3b39c;font-size:13px;}
+  .chip:hover{border-color:var(--emerald);}
+  .chip.selected{
+    background:var(--emerald);border-color:var(--emerald);color:#fff;
+    box-shadow:0 5px 14px rgba(91,158,112,.35);
+  }
+  .chip.selected::before{content:"✓";color:#fff;}
+
+  /* 自由記入欄（任意） */
+  .opt-badge{
+    display:inline-block;font-size:10px;font-weight:800;color:#7b8a9c;
+    background:#eef2f7;border:1px solid #dde5ee;border-radius:999px;
+    padding:1px 10px;margin-left:8px;vertical-align:2px;letter-spacing:.05em;
+  }
+  .free-text{
+    width:100%;min-height:76px;resize:vertical;display:block;
+    border:2px solid var(--line);border-radius:14px;background:#fff;
+    padding:12px 14px;font-size:14px;color:var(--ink);line-height:1.6;
+    font-family:inherit;transition:all .15s ease;
+  }
+  .free-text::placeholder{color:#a9b6c4;font-size:13px;}
+  .free-text:hover{border-color:#cbd6e2;}
+  .free-text:focus{
+    outline:none;border-color:var(--emerald);
+    box-shadow:0 0 0 3px rgba(91,158,112,.15);
+  }
+  .free-hint{font-size:11px;color:var(--muted);margin-top:8px;}
+
+  /* スキル5段階セグメント */
+  .skill-row{
+    display:flex;align-items:center;gap:14px;padding:12px 0;
+    border-bottom:1px solid var(--line);flex-wrap:wrap;
+  }
+  .skill-row:last-of-type{border-bottom:none;}
+  .skill-name{flex:0 0 120px;font-size:13.5px;font-weight:800;color:var(--navy);}
+  .seg-group{display:flex;gap:6px;flex:1;min-width:220px;}
+  .seg{
+    flex:1;height:38px;border-radius:9px;border:2px solid var(--line);background:#fff;
+    cursor:pointer;transition:all .12s ease;font-size:12px;font-weight:800;
+    color:#c3b39c;font-family:inherit;
+  }
+  .seg:hover{border-color:var(--emerald);}
+  .seg.on{
+    background:var(--emerald);border-color:var(--emerald);color:#fff;
+  }
+  .seg-caption{flex:0 0 74px;font-size:11px;font-weight:700;color:var(--muted);text-align:right;}
+
+  /* ナビボタン */
+  .quiz-nav{
+    display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:22px;
+  }
+  .btn-back{
+    background:#fff;border:2px solid var(--line);color:var(--muted);
+    font-size:14px;font-weight:800;padding:14px 30px;border-radius:999px;
+    cursor:pointer;transition:all .15s ease;font-family:inherit;
+  }
+  .btn-back:hover{border-color:var(--navy-soft);color:var(--navy);}
+  .btn-back[disabled]{opacity:.35;cursor:default;pointer-events:none;}
+  .btn-next{
+    background:var(--navy);border:none;color:#fff;
+    font-size:15px;font-weight:900;padding:15px 44px;border-radius:999px;
+    cursor:pointer;transition:all .15s ease;letter-spacing:.04em;
+    box-shadow:0 8px 20px rgba(120,80,30,.28);font-family:inherit;
+  }
+  .btn-next:hover{transform:translateY(-1px);background:var(--navy-soft);}
+  .btn-next.finish{
+    background:var(--emerald);box-shadow:0 8px 20px rgba(91,158,112,.4);
+  }
+
+  /* ---------- 診断中演出 ---------- */
+  .analyzing-box{
+    margin-top:60px;background:var(--card);border-radius:22px;border:1px solid var(--line);
+    box-shadow:var(--shadow);padding:54px 26px;text-align:center;
+    max-width:560px;margin-left:auto;margin-right:auto;
+  }
+  .spinner{
+    width:66px;height:66px;margin:0 auto 22px;border-radius:50%;
+    border:6px solid var(--emerald-soft);border-top-color:var(--emerald);
+    animation:spin 1s linear infinite;
+  }
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .analyzing-box h2{font-size:19px;font-weight:900;color:var(--navy);}
+  .analyzing-box .sub{font-size:13px;color:var(--muted);margin-top:6px;}
+  .check-list{
+    margin:26px auto 0;max-width:340px;text-align:left;list-style:none;
+  }
+  .check-list li{
+    display:flex;align-items:center;gap:11px;padding:9px 4px;
+    font-size:14px;font-weight:700;color:#b6c2cf;
+    opacity:.45;transition:all .4s ease;
+  }
+  .check-list li .cmark{
+    width:24px;height:24px;border-radius:50%;flex-shrink:0;
+    border:2px solid #cbd6e2;background:#fff;color:#fff;
+    display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;
+    transition:all .3s ease;
+  }
+  .check-list li.done{opacity:1;color:var(--ink);}
+  .check-list li.done .cmark{background:var(--emerald);border-color:var(--emerald);}
+
+  /* ---------- 診断サマリー ---------- */
+  .summary-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+  .score-box{
+    background:linear-gradient(160deg,var(--navy) 0%,var(--navy-soft) 100%);
+    color:#fff;border-radius:18px;padding:24px;
+    display:flex;flex-direction:column;justify-content:center;box-shadow:var(--shadow);
+  }
+  .score-label{font-size:12px;color:#e0d3bf;font-weight:600;letter-spacing:.05em;}
+  .score-num{font-size:60px;font-weight:900;line-height:1;margin:6px 0 2px;}
+  .score-num small{font-size:22px;font-weight:700;color:#c3b39c;}
+  .level-badge{
+    display:inline-flex;align-items:center;gap:6px;margin-top:14px;
+    background:var(--emerald);color:#1f4a33;font-weight:800;font-size:13px;
+    padding:7px 14px;border-radius:999px;width:fit-content;
+    box-shadow:0 4px 10px rgba(91,158,112,.35);
+  }
+  .score-bar-wrap{margin-top:16px;}
+  .score-bar-track{height:8px;background:rgba(255,255,255,.15);border-radius:999px;overflow:hidden;}
+  .score-bar-fill{height:100%;width:42%;background:var(--emerald);border-radius:999px;}
+  .score-bar-caption{font-size:11px;color:#c3b39c;margin-top:6px;}
+
+  .radar-box{
+    background:var(--card);border-radius:18px;border:1px solid var(--line);
+    padding:14px 10px 6px;box-shadow:var(--shadow-soft);
+    display:flex;flex-direction:column;align-items:center;
+  }
+  .radar-legend{display:flex;gap:16px;margin-top:2px;font-size:11px;color:var(--muted);}
+  .radar-legend span{display:inline-flex;align-items:center;gap:5px;}
+  .lg-dot{width:10px;height:10px;border-radius:3px;display:inline-block;}
+
+  /* ---------- AI講評 ---------- */
+  .review-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  .review-item{border-radius:14px;padding:16px 18px;border:1px solid var(--line);}
+  .review-item.good{background:#f0fdf9;border-color:#c7f0e2;}
+  .review-item.grow{background:#fff8ec;border-color:#fbe4bd;}
+  .review-item h4{font-size:14px;font-weight:800;margin-bottom:6px;display:flex;align-items:center;gap:7px;}
+  .review-item.good h4{color:#0b7a5b;}
+  .review-item.grow h4{color:#b7791f;}
+  .review-item p{font-size:13px;color:#6b5f52;}
+  .ai-badge{
+    display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;
+    color:var(--navy);background:#eef4fb;border:1px solid #d9e6f3;
+    padding:4px 10px;border-radius:999px;margin-left:auto;
+  }
+
+  /* ---------- おすすめ学習コース ---------- */
+  .course-reco{
+    background:linear-gradient(150deg,#f0fdf9 0%,#e6faf3 100%);
+    border:2px solid var(--emerald);border-radius:16px;
+    padding:22px 20px 18px;text-align:center;position:relative;
+  }
+  .course-badge{
+    display:inline-flex;align-items:center;gap:6px;
+    background:var(--emerald);color:#fff;font-size:12px;font-weight:900;
+    padding:6px 18px;border-radius:999px;letter-spacing:.06em;
+    box-shadow:0 5px 14px rgba(91,158,112,.4);margin-bottom:12px;
+  }
+  .course-name{
+    font-size:20px;font-weight:900;color:var(--navy);line-height:1.5;
+    letter-spacing:.01em;
+  }
+  .course-desc{
+    font-size:13px;color:#6b5f52;margin-top:12px;max-width:600px;
+    margin-left:auto;margin-right:auto;text-align:left;
+  }
+  .course-desc b{color:#0b7a5b;}
+  .course-note{
+    font-size:11px;color:var(--muted);margin-top:12px;text-align:center;
+  }
+  @media(min-width:721px){
+    .course-br{display:none;}
+  }
+
+  /* ---------- ロードマップ ---------- */
+  .roadmap{display:grid;grid-template-columns:repeat(4,1fr);gap:0;position:relative;margin-top:6px;}
+  .rm-step{position:relative;padding:0 10px;text-align:center;}
+  .rm-step:not(:last-child)::after{
+    content:"";position:absolute;top:19px;left:60%;width:80%;height:3px;
+    background:var(--line);z-index:0;
+  }
+  .rm-step.done:not(:last-child)::after,.rm-step.now:not(:last-child)::after{background:var(--emerald);}
+  .rm-dot{
+    width:38px;height:38px;border-radius:50%;margin:0 auto 10px;position:relative;z-index:1;
+    display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;
+    background:#fff;border:3px solid var(--line);color:var(--muted);
+  }
+  .rm-step.now .rm-dot{background:var(--emerald);border-color:var(--emerald);color:#fff;box-shadow:0 4px 12px rgba(91,158,112,.4);}
+  .rm-step.done .rm-dot{background:var(--navy);border-color:var(--navy);color:#fff;}
+  .rm-when{font-size:11px;color:var(--emerald);font-weight:800;}
+  .rm-step.now .rm-when{color:var(--emerald);}
+  .rm-title{font-size:13px;font-weight:800;color:var(--navy);margin:2px 0 8px;}
+  .rm-todo{list-style:none;font-size:11px;color:var(--muted);text-align:left;display:inline-block;}
+  .rm-todo li{position:relative;padding-left:14px;margin-bottom:3px;}
+  .rm-todo li::before{content:"・";position:absolute;left:0;color:var(--emerald);font-weight:900;}
+  .now-flag{
+    display:inline-block;font-size:10px;font-weight:800;color:#1f4a33;background:var(--emerald);
+    padding:2px 8px;border-radius:999px;margin-bottom:6px;
+  }
+
+  /* ---------- デイリーナビ ---------- */
+  .daily-card{border:2px solid var(--emerald);position:relative;overflow:hidden;}
+  .daily-card::before{
+    content:"今日の見せ場";position:absolute;top:14px;right:-32px;transform:rotate(45deg);
+    background:var(--emerald);color:#1f4a33;font-size:10px;font-weight:800;padding:3px 40px;
+  }
+  .time-q{font-size:15px;font-weight:800;color:var(--navy);margin-bottom:12px;}
+  .time-btns{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:22px;}
+  .time-btn{
+    flex:1;min-width:70px;padding:14px 8px;border-radius:14px;border:2px solid var(--line);
+    background:#fff;color:var(--navy);font-weight:800;font-size:15px;cursor:pointer;
+    transition:all .15s ease;text-align:center;font-family:inherit;
+  }
+  .time-btn small{display:block;font-size:10px;color:var(--muted);font-weight:600;margin-top:2px;}
+  .time-btn:hover{border-color:var(--emerald);transform:translateY(-1px);}
+  .time-btn.active{
+    background:var(--emerald);border-color:var(--emerald);color:#fff;
+    box-shadow:0 6px 16px rgba(91,158,112,.35);
+  }
+  .time-btn.active small{color:#e5fff5;}
+
+  .task-plan-head{
+    display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px;
+  }
+  .task-plan-head h4{font-size:14px;font-weight:800;color:var(--navy);}
+  .pt-counter{
+    font-size:13px;font-weight:800;color:#1f4a33;background:var(--emerald-soft);
+    border:1px solid #a7ecd0;padding:6px 14px;border-radius:999px;
+  }
+  .pt-counter b{color:var(--emerald);font-size:16px;}
+
+  .task{
+    display:flex;align-items:flex-start;gap:14px;padding:16px;border:1px solid var(--line);
+    border-radius:14px;margin-bottom:12px;background:#fff;transition:all .15s ease;cursor:pointer;
+  }
+  .task:hover{box-shadow:var(--shadow-soft);}
+  .task.done{background:#f6faf8;border-color:#d3ede2;}
+  .chk{
+    width:26px;height:26px;border-radius:8px;border:2px solid #cbd6e2;flex-shrink:0;margin-top:2px;
+    display:flex;align-items:center;justify-content:center;font-size:15px;color:#fff;
+    transition:all .15s ease;background:#fff;
+  }
+  .task.done .chk{background:var(--emerald);border-color:var(--emerald);}
+  .task-body{flex:1;min-width:0;}
+  .task-title{font-size:14px;font-weight:700;color:var(--ink);transition:all .15s ease;}
+  .task.done .task-title{text-decoration:line-through;color:var(--muted);}
+  .task-meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;align-items:center;}
+  .tag{font-size:11px;font-weight:700;padding:3px 10px;border-radius:999px;}
+  .tag.time{background:#eef4fb;color:var(--navy-soft);}
+  .tag.pt{background:var(--emerald-soft);color:#0b7a5b;}
+  .tag.type-in{background:#eef2f7;color:#5a6b7f;border:1px solid #dde5ee;}
+  .tag.type-out{background:#fff1e0;color:#b7791f;border:1px solid #fbe4bd;}
+
+  /* ---------- 継続ステータス ---------- */
+  .status-row{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+  .stat-mini{
+    background:var(--card);border-radius:16px;border:1px solid var(--line);
+    padding:18px;text-align:center;box-shadow:var(--shadow-soft);
+  }
+  .stat-mini .em{font-size:26px;line-height:1;}
+  .stat-mini .big{font-size:26px;font-weight:900;color:var(--navy);margin:6px 0 2px;}
+  .stat-mini .big span{font-size:14px;color:var(--muted);font-weight:700;}
+  .stat-mini .cap{font-size:12px;color:var(--muted);font-weight:600;}
+
+  /* ---------- フッター ---------- */
+  footer{margin-top:30px;text-align:center;color:var(--muted);font-size:12px;}
+  footer .note{
+    background:#fff;border:1px dashed #cbd6e2;border-radius:12px;padding:12px 16px;
+    display:inline-block;font-size:11px;
+  }
+  footer .tm{margin-top:14px;font-weight:900;letter-spacing:.15em;color:var(--navy);font-size:13px;opacity:.6;}
+
+  /* ---------- レスポンシブ ---------- */
+  @media(max-width:720px){
+    .summary-grid{grid-template-columns:1fr;}
+    .review-grid{grid-template-columns:1fr;}
+    .status-row{grid-template-columns:1fr;}
+    .roadmap{grid-template-columns:1fr;gap:0;}
+    .rm-step{display:flex;text-align:left;gap:14px;padding:0 0 18px 0;align-items:flex-start;}
+    .rm-step:not(:last-child)::after{
+      top:38px;left:18px;width:3px;height:calc(100% - 30px);
+    }
+    .rm-dot{margin:0;}
+    .rm-todo{display:block;}
+    .brand h1{font-size:16px;}
+    .score-num{font-size:52px;}
+    .welcome-points{grid-template-columns:1fr;}
+    .welcome-hero h2{font-size:21px;}
+    .opt-grid,.opt-grid.cols4,.opt-grid.cols3{grid-template-columns:repeat(2,1fr);}
+    .skill-name{flex:0 0 100%;}
+    .seg-caption{flex:1;text-align:left;}
+    .btn-next{padding:15px 32px;}
+  }
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     画面A：ウェルカム
+============================================================ -->
+<!-- プラン切替バー（デモ用・提案の2プランを体験で見せる） -->
+<div class="plan-bar" id="planBar">
+  <span class="pl-label">プラン切替</span>
+  <div class="pl-btns">
+    <button class="pl-btn on" id="plFull" type="button" onclick="setPlan('full')">フル連携版</button>
+    <button class="pl-btn" id="plMagic" type="button" onclick="setPlan('magic')">マジックリンク完結版</button>
+  </div>
+  <span class="pl-note" id="planNote">受講状況・ポイント・つまずき検知まで連携　<span class="pl-price">概算 約202万円</span></span>
+</div>
+
+<div class="screen active" id="screen-welcome">
+  <div class="wrap">
+    <div class="welcome-hero">
+      <div class="welcome-logo">M</div>
+      <h2>マーケニスタ AIコンシェルジュ<span class="kakko">（仮）</span></h2>
+      <p class="lead">いくつかの質問に答えるだけで、AIがあなたの現在地を診断し、<br>あなた専用の学習ロードマップと今日のタスクをご提案します。</p>
+      <div class="time-note">⏱ 所要時間：5〜10分</div>
+      <div class="welcome-points">
+        <div class="wpoint"><span class="em">📊</span>スキルを6軸で見える化</div>
+        <div class="wpoint"><span class="em">🗺️</span>目標までのロードマップ</div>
+        <div class="wpoint"><span class="em">🧭</span>毎日のタスクを自動提案</div>
+      </div>
+      <button class="btn-start" type="button" onclick="goToStep(1)">診断をはじめる →</button>
+    </div>
+    <footer>
+      <div class="note">※ 本画面は提案用のモックです。表示は全てサンプルデータです。</div>
+      <div class="tm">TOMOSHIBI</div>
+    </footer>
+  </div>
+</div>
+
+<!-- ============================================================
+     画面B：設問ステップ（Step1〜5）
+============================================================ -->
+<div class="screen" id="screen-quiz">
+  <div class="wrap">
+
+    <!-- 進捗バー -->
+    <div class="quiz-head">
+      <div class="quiz-step-label">
+        <span id="stepLabel">Step 1 / 5　いまのお仕事</span>
+        <span class="pct" id="stepPct">20%</span>
+      </div>
+      <div class="qbar-track"><div class="qbar-fill" id="qbarFill"></div></div>
+    </div>
+
+    <!-- Step1：いまのお仕事 -->
+    <div class="card quiz-card qstep" id="qstep-1">
+      <div class="q-block">
+        <div class="q-title"><span class="qic">💼</span>現在のご職業を教えてください</div>
+        <div class="q-sub">いちばん近いものを1つ選んでください</div>
+        <div class="opt-grid cols4">
+          <button class="opt" type="button" onclick="pickOne(this)">会社員</button>
+          <button class="opt" type="button" onclick="pickOne(this)">フリーランス</button>
+          <button class="opt" type="button" onclick="pickOne(this)">経営者</button>
+          <button class="opt" type="button" onclick="pickOne(this)">学生・その他</button>
+        </div>
+      </div>
+      <div class="q-block">
+        <div class="q-title"><span class="qic">🏢</span>いま関わっている業界は？</div>
+        <div class="q-sub">いちばん近いものを1つ選んでください</div>
+        <div class="opt-grid cols3">
+          <button class="opt" type="button" onclick="pickOne(this)">IT・Web</button>
+          <button class="opt" type="button" onclick="pickOne(this)">小売・サービス</button>
+          <button class="opt" type="button" onclick="pickOne(this)">製造・建設</button>
+          <button class="opt" type="button" onclick="pickOne(this)">医療・美容</button>
+          <button class="opt" type="button" onclick="pickOne(this)">教育・人材</button>
+          <button class="opt" type="button" onclick="pickOne(this)">その他</button>
+        </div>
+      </div>
+      <div class="q-block">
+        <div class="q-title"><span class="qic">⏰</span>週にどれくらい学習に時間を使えますか？</div>
+        <div class="opt-grid cols4">
+          <button class="opt" type="button" onclick="pickOne(this)">〜3時間<small>スキマ時間中心</small></button>
+          <button class="opt" type="button" onclick="pickOne(this)">3〜5時間<small>平日コツコツ</small></button>
+          <button class="opt" type="button" onclick="pickOne(this)">5〜10時間<small>しっかり確保</small></button>
+          <button class="opt" type="button" onclick="pickOne(this)">10時間〜<small>本気モード</small></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step2：目指す姿 -->
+    <div class="card quiz-card qstep" id="qstep-2" style="display:none;">
+      <div class="q-block">
+        <div class="q-title"><span class="qic">🎯</span>目指す理想の状態は？</div>
+        <div class="q-sub">いちばん近いものを1つ選んでください</div>
+        <div class="opt-grid">
+          <button class="opt" type="button" onclick="pickOne(this)">副業で収入の柱をつくる</button>
+          <button class="opt" type="button" onclick="pickOne(this)">フリーランスとして独立する</button>
+          <button class="opt" type="button" onclick="pickOne(this)">転職・キャリアUPに活かす</button>
+          <button class="opt" type="button" onclick="pickOne(this)">自社の事業に活かす</button>
+        </div>
+      </div>
+      <div class="q-block">
+        <div class="q-title"><span class="qic">💰</span>目標とする月の報酬は？</div>
+        <div class="opt-grid cols4">
+          <button class="opt" type="button" onclick="pickOne(this)">月5万円</button>
+          <button class="opt" type="button" onclick="pickOne(this)">月10万円</button>
+          <button class="opt" type="button" onclick="pickOne(this)">月30万円</button>
+          <button class="opt" type="button" onclick="pickOne(this)">月50万円〜</button>
+        </div>
+      </div>
+      <div class="q-block">
+        <div class="q-title"><span class="qic">📅</span>いつまでに達成したいですか？</div>
+        <div class="opt-grid cols4">
+          <button class="opt" type="button" onclick="pickOne(this)">3ヶ月</button>
+          <button class="opt" type="button" onclick="pickOne(this)">半年</button>
+          <button class="opt" type="button" onclick="pickOne(this)">1年</button>
+          <button class="opt" type="button" onclick="pickOne(this)">じっくり</button>
+        </div>
+      </div>
+      <div class="q-block">
+        <div class="q-title"><span class="qic">💬</span>その目標を、あなたの言葉で教えてください<span class="opt-badge">任意</span></div>
+        <textarea class="free-text" rows="3" placeholder="例：会社に依存せず、自分のスキルで月10万円稼げるようになりたい"></textarea>
+        <div class="free-hint">※ 書いていただくほど、AIの診断コメントがあなた専用になります</div>
+      </div>
+    </div>
+
+    <!-- Step3：いま困っていること -->
+    <div class="card quiz-card qstep" id="qstep-3" style="display:none;">
+      <div class="q-block">
+        <div class="q-title"><span class="qic">😥</span>いま困っていることは？</div>
+        <div class="q-sub">あてはまるものを全て選んでください（複数選択OK）</div>
+        <div class="chip-wrap">
+          <button class="chip" type="button" onclick="pickMulti(this)">何から学ぶべきか分からない</button>
+          <button class="chip" type="button" onclick="pickMulti(this)">学んでも実践できていない</button>
+          <button class="chip" type="button" onclick="pickMulti(this)">案件の取り方が分からない</button>
+          <button class="chip" type="button" onclick="pickMulti(this)">継続できない</button>
+          <button class="chip" type="button" onclick="pickMulti(this)">実績がない</button>
+          <button class="chip" type="button" onclick="pickMulti(this)">自信がない</button>
+        </div>
+        <div class="q-note">💡 選んだお悩みに合わせて、AIコメントとタスク提案の内容が変わります</div>
+      </div>
+      <div class="q-block">
+        <div class="q-title"><span class="qic">📝</span>いちばんの悩みを具体的に書いてみてください<span class="opt-badge">任意</span></div>
+        <textarea class="free-text" rows="3" placeholder="例：講座を見ても、自分の場合はどう活かせばいいのか分からない"></textarea>
+      </div>
+    </div>
+
+    <!-- Step4：スキルの自己評価 -->
+    <div class="card quiz-card qstep" id="qstep-4" style="display:none;">
+      <div class="q-block">
+        <div class="q-title"><span class="qic">📊</span>スキルの自己評価</div>
+        <div class="q-sub">6つのスキルを、いまの自信度で5段階評価してください（1＝これから ／ 5＝得意）</div>
+
+        <div class="skill-row">
+          <div class="skill-name">✍️ ライティング</div>
+          <div class="seg-group" data-skill="writing">
+            <button class="seg" type="button" onclick="pickSeg(this,1)">1</button>
+            <button class="seg" type="button" onclick="pickSeg(this,2)">2</button>
+            <button class="seg" type="button" onclick="pickSeg(this,3)">3</button>
+            <button class="seg" type="button" onclick="pickSeg(this,4)">4</button>
+            <button class="seg" type="button" onclick="pickSeg(this,5)">5</button>
+          </div>
+          <div class="seg-caption" data-cap="writing">未選択</div>
+        </div>
+
+        <div class="skill-row">
+          <div class="skill-name">📣 広告運用</div>
+          <div class="seg-group" data-skill="ads">
+            <button class="seg" type="button" onclick="pickSeg(this,1)">1</button>
+            <button class="seg" type="button" onclick="pickSeg(this,2)">2</button>
+            <button class="seg" type="button" onclick="pickSeg(this,3)">3</button>
+            <button class="seg" type="button" onclick="pickSeg(this,4)">4</button>
+            <button class="seg" type="button" onclick="pickSeg(this,5)">5</button>
+          </div>
+          <div class="seg-caption" data-cap="ads">未選択</div>
+        </div>
+
+        <div class="skill-row">
+          <div class="skill-name">📱 SNS運用</div>
+          <div class="seg-group" data-skill="sns">
+            <button class="seg" type="button" onclick="pickSeg(this,1)">1</button>
+            <button class="seg" type="button" onclick="pickSeg(this,2)">2</button>
+            <button class="seg" type="button" onclick="pickSeg(this,3)">3</button>
+            <button class="seg" type="button" onclick="pickSeg(this,4)">4</button>
+            <button class="seg" type="button" onclick="pickSeg(this,5)">5</button>
+          </div>
+          <div class="seg-caption" data-cap="sns">未選択</div>
+        </div>
+
+        <div class="skill-row">
+          <div class="skill-name">📈 データ分析</div>
+          <div class="seg-group" data-skill="data">
+            <button class="seg" type="button" onclick="pickSeg(this,1)">1</button>
+            <button class="seg" type="button" onclick="pickSeg(this,2)">2</button>
+            <button class="seg" type="button" onclick="pickSeg(this,3)">3</button>
+            <button class="seg" type="button" onclick="pickSeg(this,4)">4</button>
+            <button class="seg" type="button" onclick="pickSeg(this,5)">5</button>
+          </div>
+          <div class="seg-caption" data-cap="data">未選択</div>
+        </div>
+
+        <div class="skill-row">
+          <div class="skill-name">🤝 営業・提案</div>
+          <div class="seg-group" data-skill="sales">
+            <button class="seg" type="button" onclick="pickSeg(this,1)">1</button>
+            <button class="seg" type="button" onclick="pickSeg(this,2)">2</button>
+            <button class="seg" type="button" onclick="pickSeg(this,3)">3</button>
+            <button class="seg" type="button" onclick="pickSeg(this,4)">4</button>
+            <button class="seg" type="button" onclick="pickSeg(this,5)">5</button>
+          </div>
+          <div class="seg-caption" data-cap="sales">未選択</div>
+        </div>
+
+        <div class="skill-row">
+          <div class="skill-name">🧩 戦略設計</div>
+          <div class="seg-group" data-skill="strategy">
+            <button class="seg" type="button" onclick="pickSeg(this,1)">1</button>
+            <button class="seg" type="button" onclick="pickSeg(this,2)">2</button>
+            <button class="seg" type="button" onclick="pickSeg(this,3)">3</button>
+            <button class="seg" type="button" onclick="pickSeg(this,4)">4</button>
+            <button class="seg" type="button" onclick="pickSeg(this,5)">5</button>
+          </div>
+          <div class="seg-caption" data-cap="strategy">未選択</div>
+        </div>
+
+        <div class="q-note">📊 この回答が、診断結果のレーダーチャートになります</div>
+      </div>
+    </div>
+
+    <!-- Step5：経験 -->
+    <div class="card quiz-card qstep" id="qstep-5" style="display:none;">
+      <div class="q-block">
+        <div class="q-title"><span class="qic">🧪</span>マーケティングの実案件の経験は？</div>
+        <div class="q-sub">有償・無償を問わず「誰かのために」やった経験です</div>
+        <div class="opt-grid cols3">
+          <button class="opt" type="button" onclick="pickOne(this)">なし<small>これから</small></button>
+          <button class="opt" type="button" onclick="pickOne(this)">1〜2件<small>やってみた</small></button>
+          <button class="opt" type="button" onclick="pickOne(this)">3件〜<small>経験あり</small></button>
+        </div>
+      </div>
+      <div class="q-block">
+        <div class="q-title"><span class="qic">📁</span>ポートフォリオ（実績集）はありますか？</div>
+        <div class="opt-grid cols3">
+          <button class="opt" type="button" onclick="pickOne(this)">ある</button>
+          <button class="opt" type="button" onclick="pickOne(this)">作成中</button>
+          <button class="opt" type="button" onclick="pickOne(this)">ない</button>
+        </div>
+      </div>
+      <div class="q-block">
+        <div class="q-title"><span class="qic">💬</span>その他、伝えておきたいことがあれば<span class="opt-badge">任意</span></div>
+        <textarea class="free-text" rows="2" placeholder="例：本業が忙しい時期で学習ペースに波があります／SNSのフォロワーが1,000人います など"></textarea>
+        <div class="q-note">🎉 これで最後の質問です！「診断する」を押すとAIが分析をはじめます</div>
+      </div>
+    </div>
+
+    <!-- ナビ -->
+    <div class="quiz-nav">
+      <button class="btn-back" type="button" id="btnBack" onclick="goBack()">← 戻る</button>
+      <button class="btn-next" type="button" id="btnNext" onclick="goNext()">次へ →</button>
+    </div>
+
+    <footer>
+      <div class="note">※ 本画面は提案用のモックです。どの選択肢を選んでもサンプルの診断結果が表示されます。</div>
+      <div class="tm">TOMOSHIBI</div>
+    </footer>
+  </div>
+</div>
+
+<!-- ============================================================
+     画面C：診断中演出
+============================================================ -->
+<div class="screen" id="screen-analyzing">
+  <div class="wrap">
+    <div class="analyzing-box">
+      <div class="spinner"></div>
+      <h2>AIがあなたの回答を分析しています…</h2>
+      <p class="sub">あなた専用の診断結果とロードマップを作成中です</p>
+      <ul class="check-list" id="checkList">
+        <li><span class="cmark">✓</span>回答を解析しています</li>
+        <li><span class="cmark">✓</span>強み・伸びしろを特定しています</li>
+        <li><span class="cmark">✓</span>成長ロードマップを生成しています</li>
+        <li><span class="cmark">✓</span>今日のタスクを作成しています</li>
+      </ul>
+    </div>
+    <footer>
+      <div class="note">※ 本画面は提案用のモックです。表示は全てサンプルデータです。</div>
+      <div class="tm">TOMOSHIBI</div>
+    </footer>
+  </div>
+</div>
+
+<!-- ============================================================
+     画面D：結果ダッシュボード（v1をそのまま流用）
+============================================================ -->
+<div class="screen" id="screen-result">
+
+<!-- 1. ヘッダー -->
+<header class="top">
+  <div class="top-inner">
+    <div class="brand">
+      <div class="logo">M</div>
+      <div>
+        <h1>マーケニスタ AIコンシェルジュ<span style="font-size:12px;font-weight:600;color:#c3b39c;">（仮）</span></h1>
+        <p>あなた専用の学習ナビゲーション</p>
+      </div>
+    </div>
+    <div class="user-chip">
+      <div class="avatar">山</div>
+      <div>
+        <div class="u-name">山田 太郎さん</div>
+        <div class="u-sub full-only">受講開始日：2026年6月1日</div>
+        <div class="u-sub magic-only">マジックリンクでログイン中</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- 2. 診断サマリー -->
+  <section>
+    <div class="summary-grid">
+      <div class="score-box">
+        <div class="score-label">総合スキルスコア</div>
+        <div class="score-num">42<small>/100</small></div>
+        <div class="score-bar-wrap">
+          <div class="score-bar-track"><div class="score-bar-fill"></div></div>
+          <div class="score-bar-caption full-only">同期受講生の平均は 38 点です</div>
+          <div class="score-bar-caption magic-only">前回のあなたは 35 点でした（過去の自分と比較）</div>
+        </div>
+        <div class="level-badge">🌱 現在レベル：基礎固め期</div>
+      </div>
+
+      <div class="radar-box">
+        <div class="card-title" style="margin:6px 0 2px;">📊 スキルレーダー</div>
+        <!-- inline SVG レーダーチャート（6軸） -->
+        <svg viewBox="0 0 320 300" width="100%" style="max-width:340px;" role="img" aria-label="6軸スキルレーダーチャート">
+          <!-- グリッド（同心六角形） -->
+          <g fill="none" stroke="#e3e9f0" stroke-width="1">
+            <!-- 中心(160,150) 各軸角度: 上から時計回り 60度刻み -->
+            <!-- level 1.0 -->
+            <polygon points="160,40 255.3,95 255.3,205 160,260 64.7,205 64.7,95"/>
+            <polygon points="160,62 236.2,105 236.2,195 160,238 83.8,195 83.8,105"/>
+            <polygon points="160,84 217.1,115 217.1,185 160,216 102.9,185 102.9,115"/>
+            <polygon points="160,106 198.0,125 198.0,175 160,194 122.0,175 122.0,125"/>
+            <polygon points="160,128 178.9,135 178.9,165 160,172 141.1,165 141.1,135"/>
+          </g>
+          <!-- 軸線 -->
+          <g stroke="#e3e9f0" stroke-width="1">
+            <line x1="160" y1="150" x2="160" y2="40"/>
+            <line x1="160" y1="150" x2="255.3" y2="95"/>
+            <line x1="160" y1="150" x2="255.3" y2="205"/>
+            <line x1="160" y1="150" x2="160" y2="260"/>
+            <line x1="160" y1="150" x2="64.7" y2="205"/>
+            <line x1="160" y1="150" x2="64.7" y2="95"/>
+          </g>
+
+          <!-- レベル平均（ネイビー半透明） 各軸値 ~0.38前後 -->
+          <!-- 値→座標: 中心+(半径110*値)方向。軸: 0上,1右上,2右下,3下,4左下,5左上 -->
+          <polygon points="160,108 195,131 190,180 160,192 128,178 132,131"
+            fill="rgba(120,80,30,.18)" stroke="#e06a22" stroke-width="1.6" stroke-dasharray="4 3"/>
+
+          <!-- 山田さん（エメラルド半透明） ライティング高め・広告/データ低め -->
+          <!-- 値: ライティング0.7,広告0.28,SNS0.5,データ0.22,営業提案0.55,戦略0.4 -->
+          <polygon points="160,73 187,127 187,182 160,174 116,177 138,124"
+            fill="rgba(91,158,112,.28)" stroke="#5b9e70" stroke-width="2"/>
+          <!-- 山田さん頂点ドット -->
+          <g fill="#5b9e70">
+            <circle cx="160" cy="73" r="3.5"/>
+            <circle cx="187" cy="127" r="3.5"/>
+            <circle cx="187" cy="182" r="3.5"/>
+            <circle cx="160" cy="174" r="3.5"/>
+            <circle cx="116" cy="177" r="3.5"/>
+            <circle cx="138" cy="124" r="3.5"/>
+          </g>
+
+          <!-- 軸ラベル -->
+          <g fill="#6b5f52" font-size="11" font-weight="700" font-family="sans-serif" text-anchor="middle">
+            <text x="160" y="30">ライティング</text>
+            <text x="285" y="92">広告運用</text>
+            <text x="285" y="215">SNS運用</text>
+            <text x="160" y="278">データ分析</text>
+            <text x="42" y="215">営業・提案</text>
+            <text x="42" y="92">戦略設計</text>
+          </g>
+        </svg>
+        <div class="radar-legend">
+          <span><i class="lg-dot" style="background:#5b9e70;"></i>山田さん</span>
+          <span><i class="lg-dot" style="background:rgba(120,80,30,.35);"></i>レベル平均</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. AI診断コメント -->
+  <section>
+    <div class="card">
+      <div class="card-title">あなたへの診断コメント</div>
+      <div class="review-grid">
+        <div class="review-item good">
+          <h4>あなたの強み</h4>
+          <p>ライティングの自己評価が高く、実務でも文章を書いた経験があります。この力はマーケの土台になるので、初案件（コピー・記事作成系）に最も近いスキルです。営業・提案の意欲も高く、人に価値を届ける適性が見えます。</p>
+        </div>
+        <div class="review-item grow">
+          <h4>これからの伸びしろ</h4>
+          <p>広告運用とデータ分析が現在の伸びしろです。ここは「数字を見て改善する」マーケの中核なので、動画インプット＋手を動かすアウトプットで一気に伸びます。まずは広告運用の基礎から、小さく実践していきましょう。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3.5 あなたにおすすめの学習コース（マーケニスタ既存7コースとの連動） -->
+  <section>
+    <div class="card">
+      <div class="card-title">
+        あなたにおすすめの学習コース
+        <span class="ai-badge">✨ 7コースからAIが自動判定</span>
+      </div>
+      <div class="course-reco">
+        <div class="course-badge">🏅 おすすめコース</div>
+        <div class="course-name">広告運用やWebマーケティングスキルを<br class="course-br">もっと上げたい</div>
+        <p class="course-desc">診断結果から、7つの学習コースのうちこのコースが最適と判定しました。<b>ステップ02『Web広告の基礎〜運用まで理解を深めよう』</b>から始めるのがおすすめです。</p>
+      </div>
+      <div class="course-note">※ マーケニスタの既存ロードマップと連動する想定です</div>
+    </div>
+  </section>
+
+  <!-- 3.5 上位診断（SWOT／クロスSWOT） -->
+  <section>
+    <div class="card">
+      <div class="ldx-head">
+        <div>
+          <div class="card-title" style="margin:0;">上位診断</div>
+          <div class="ldx-sub">SWOT・クロスSWOTと、講師フィードバックが蓄積される"生きたカルテ"</div>
+        </div>
+        <button class="ldx-toggle" type="button" onclick="toggleLdx()"><span id="ldxLabel">上位診断はこちら</span><span id="ldxArrow">＋</span></button>
+      </div>
+      <div class="ldx-body" id="ldxBody" style="display:none;">
+      <div class="swot-grid">
+        <div class="swot-cell s"><div class="sw-h">強み <small>Strength</small></div><ul><li>学ぶ意欲が高く時間も確保できる</li><li>目標が明確（副業で月5万）</li></ul></div>
+        <div class="swot-cell w"><div class="sw-h">弱み <small>Weakness</small></div><ul><li>広告運用・データ分析の知識が浅い</li><li>実案件の経験・実績がまだ無い</li></ul></div>
+        <div class="swot-cell o"><div class="sw-h">機会 <small>Opportunity</small></div><ul><li>マーケ人材の需要が拡大中</li><li>副業・フリーランス市場が伸びている</li></ul></div>
+        <div class="swot-cell t"><div class="sw-h">脅威 <small>Threat</small></div><ul><li>独学は挫折しやすい</li><li>スキルなしでは価格競争に巻き込まれる</li></ul></div>
+      </div>
+      <div class="cross-swot">
+        <div class="cs-title">🎯 クロスSWOT（今の打ち手）</div>
+        <div class="cs-row"><b>強み×機会</b>：高い意欲を、伸びている広告運用の需要にそのまま乗せる。まず基礎講座を短期集中で。</div>
+        <div class="cs-row"><b>弱み×脅威</b>：実績ゼロのまま価格競争に入らないよう、最初の3ヶ月で「見せられる実績」を1件つくる。</div>
+      </div>
+      <div class="teacher-fb">
+        <div class="tf-title">講師フィードバック<span class="tf-hint"> ・ 担当講師が記入し、ここに蓄積されていきます</span></div>
+        <div class="tf-log" id="tfLog">
+          <div class="tf-item"><div class="tf-meta">佐藤 講師　6/20</div><div class="tf-text">ライティングの基礎はできています。次は広告運用の数値を1つ読めるようになりましょう。</div></div>
+          <div class="tf-item"><div class="tf-meta">佐藤 講師　7/4</div><div class="tf-text">提案文の構成が良くなりました。CTAをもう一歩具体的にすると、返信率が上がります。</div></div>
+        </div>
+        <textarea class="tf-input" id="tfInput" placeholder="この受講生へのフィードバックを記入…"></textarea>
+        <button class="tf-add" type="button" onclick="addFb()">フィードバックを追加</button>
+      </div>
+      <div class="swot-note full-only">担当が変わっても引き継げる"生きたカルテ"になります（受講状況との連携が前提）。</div>
+      <div class="swot-note magic-only">上位診断（SWOT／クロスSWOT）は完結版でも利用できます。講師フィードバックの自動蓄積・担当引き継ぎはフル連携版の機能です。</div>
+      </div><!-- /ldx-body -->
+    </div>
+  </section>
+
+  <!-- 4. ロードマップ -->
+  <section>
+    <div class="card">
+      <div class="card-title">あなたの成長ロードマップ</div>
+      <div class="roadmap">
+        <div class="rm-step now">
+          <div class="rm-dot">📍</div>
+          <div>
+            <span class="now-flag">現在地</span>
+            <div class="rm-when">NOW</div>
+            <div class="rm-title">基礎固め期</div>
+            <ul class="rm-todo">
+              <li>診断結果を確認</li>
+              <li>毎日の学習習慣化</li>
+            </ul>
+          </div>
+        </div>
+        <div class="rm-step">
+          <div class="rm-dot">1</div>
+          <div>
+            <div class="rm-when">1ヶ月後</div>
+            <div class="rm-title">基礎インプット完了</div>
+            <ul class="rm-todo">
+              <li>基礎講座を修了</li>
+              <li>広告運用の基本理解</li>
+            </ul>
+          </div>
+        </div>
+        <div class="rm-step">
+          <div class="rm-dot">3</div>
+          <div>
+            <div class="rm-when">3ヶ月後</div>
+            <div class="rm-title">初案件に応募</div>
+            <ul class="rm-todo">
+              <li>提案文を5本作成</li>
+              <li>クラウドソーシング登録</li>
+            </ul>
+          </div>
+        </div>
+        <div class="rm-step">
+          <div class="rm-dot">🏆</div>
+          <div>
+            <div class="rm-when">6ヶ月後</div>
+            <div class="rm-title">副業月5万円</div>
+            <ul class="rm-todo">
+              <li>継続案件を1件獲得</li>
+              <li>実績をポートフォリオ化</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. デイリーナビ（見せ場） -->
+  <section>
+    <div class="card daily-card">
+      <div class="card-title">今日のデイリーナビ</div>
+      <div class="time-q">⏰ 今日は何時間、学習に使えますか？</div>
+      <div class="time-btns" id="timeBtns">
+        <button class="time-btn" type="button" onclick="selectTime(this)">30分<small>コツコツ</small></button>
+        <button class="time-btn" type="button" onclick="selectTime(this)">1時間<small>標準</small></button>
+        <button class="time-btn active" type="button" onclick="selectTime(this)">2時間<small>しっかり</small></button>
+        <button class="time-btn" type="button" onclick="selectTime(this)">3時間〜<small>集中</small></button>
+      </div>
+
+      <div class="task-plan-head">
+        <h4>今日のおすすめタスク（合計 約2時間）</h4>
+        <div class="pt-counter">獲得ポイント <b id="ptNow">0</b> / 50 pt</div>
+      </div>
+
+      <div class="task" onclick="toggleTask(this,10)">
+        <div class="chk">✓</div>
+        <div class="task-body">
+          <div class="task-title">動画『広告運用 基礎 第3章』を見る</div>
+          <div class="task-meta">
+            <span class="tag time">⏱ 40分</span>
+            <span class="tag pt">+10 pt</span>
+            <span class="tag type-in">📥 インプット</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="task" onclick="toggleTask(this,15)">
+        <div class="chk">✓</div>
+        <div class="task-body">
+          <div class="task-title">学んだ内容を1投稿でアウトプットする</div>
+          <div class="task-meta">
+            <span class="tag time">⏱ 20分</span>
+            <span class="tag pt">+15 pt</span>
+            <span class="tag type-out">📤 アウトプット</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="task" onclick="toggleTask(this,25)">
+        <div class="chk">✓</div>
+        <div class="task-body">
+          <div class="task-title">サンプル案件の提案文を1本書く</div>
+          <div class="task-meta">
+            <span class="tag time">⏱ 60分</span>
+            <span class="tag pt">+25 pt</span>
+            <span class="tag type-out">📤 アウトプット</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5.5 つまずき検知（フル連携のみ） -->
+  <section class="full-only">
+    <div class="detect-card">
+      <div class="dt-ic">⚠️</div>
+      <div>
+        <div class="dt-title">つまずき検知アラート</div>
+        <div class="dt-body">3日タスクが未達成のときに、本人へ励ましの通知が届き、運営にも「サポートが必要かも」と自動でお知らせします。受講状況と連携しているからできる、退会の先回りです。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- マジックリンク完結版の注記 -->
+  <section class="magic-only">
+    <div class="link-note">
+      <span class="lk-ic">🔗</span>
+      <div><b>マジックリンク完結版</b>：マーケニスタ本体と繋がず、届いたリンクを踏むだけで独立して動きます。受講状況の自動取り込み・既存ポイント連動・つまずき検知は付きませんが、その分すぐ・安全に始められます（概算 約169万円）。</div>
+    </div>
+  </section>
+
+  <!-- 6. 継続ステータス -->
+  <section>
+    <div class="status-row">
+      <div class="stat-mini">
+        <div class="em">🔥</div>
+        <div class="big">5<span> 日目</span></div>
+        <div class="cap">連続学習</div>
+      </div>
+      <div class="stat-mini">
+        <div class="em">⭐</div>
+        <div class="big">320<span> pt</span></div>
+        <div class="cap full-only">累計ポイント（既存制度と連動）</div>
+        <div class="cap magic-only">累計ポイント（アプリ内）</div>
+      </div>
+      <div class="stat-mini">
+        <div class="em">📚</div>
+        <div class="big">6.5<span> 時間</span></div>
+        <div class="cap">今週の学習時間</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7. フッター -->
+  <footer>
+    <div class="note">※ 本画面は提案用のモックです。表示は全てサンプルデータです。</div>
+    <div class="tm">TOMOSHIBI</div>
+  </footer>
+
+</div>
+
+</div><!-- /#screen-result -->
+
+<script>
+  /* ==========================================================
+     画面切替（ウェルカム → 設問1〜5 → 診断中 → 結果）
+  ========================================================== */
+  var TOTAL_STEPS = 5;
+  var currentStep = 1;
+  var STEP_NAMES = {
+    1:"いまのお仕事",
+    2:"目指す姿",
+    3:"いま困っていること",
+    4:"スキルの自己評価",
+    5:"これまでの経験"
+  };
+
+  function showScreen(id){
+    document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});
+    document.getElementById(id).classList.add('active');
+    window.scrollTo({top:0,behavior:'instant' in window ? 'instant' : 'auto'});
+  }
+
+  function renderStep(){
+    document.querySelectorAll('.qstep').forEach(function(s){s.style.display='none';});
+    document.getElementById('qstep-'+currentStep).style.display='block';
+    document.getElementById('stepLabel').textContent =
+      'Step '+currentStep+' / '+TOTAL_STEPS+'　'+STEP_NAMES[currentStep];
+    var pct = Math.round(currentStep/TOTAL_STEPS*100);
+    document.getElementById('stepPct').textContent = pct+'%';
+    document.getElementById('qbarFill').style.width = pct+'%';
+    document.getElementById('btnBack').disabled = (currentStep===1);
+    var next = document.getElementById('btnNext');
+    if(currentStep===TOTAL_STEPS){
+      next.textContent = '🔍 診断する';
+      next.classList.add('finish');
+    }else{
+      next.textContent = '次へ →';
+      next.classList.remove('finish');
+    }
+  }
+
+  function goToStep(n){
+    currentStep = n;
+    renderStep();
+    showScreen('screen-quiz');
+  }
+
+  function goNext(){
+    if(currentStep < TOTAL_STEPS){
+      currentStep++;
+      renderStep();
+      window.scrollTo(0,0);
+    }else{
+      startAnalyzing();
+    }
+  }
+
+  function goBack(){
+    if(currentStep > 1){
+      currentStep--;
+      renderStep();
+      window.scrollTo(0,0);
+    }
+  }
+
+  /* ==========================================================
+     設問の選択UI（モックなので回答は保存しない）
+  ========================================================== */
+  // 単一選択（同じ opt-grid 内で1つだけ）
+  function pickOne(btn){
+    var group = btn.parentElement;
+    group.querySelectorAll('.opt').forEach(function(b){b.classList.remove('selected');});
+    btn.classList.add('selected');
+  }
+
+  // 複数選択チップ
+  function pickMulti(btn){
+    btn.classList.toggle('selected');
+  }
+
+  // スキル5段階セグメント（クリックした値まで塗る）
+  var SEG_CAPTIONS = {1:'これから',2:'少しだけ',3:'ふつう',4:'まあ得意',5:'得意！'};
+  function pickSeg(btn, val){
+    var group = btn.parentElement;
+    group.querySelectorAll('.seg').forEach(function(b,i){
+      b.classList.toggle('on', i < val);
+    });
+    var key = group.getAttribute('data-skill');
+    var cap = document.querySelector('.seg-caption[data-cap="'+key+'"]');
+    if(cap){ cap.textContent = val+' ／ '+SEG_CAPTIONS[val]; }
+  }
+
+  /* ==========================================================
+     診断中演出（チェック行が順に点灯 → 自動で結果へ）
+  ========================================================== */
+  function startAnalyzing(){
+    showScreen('screen-analyzing');
+    var items = document.querySelectorAll('#checkList li');
+    items.forEach(function(li){li.classList.remove('done');});
+    items.forEach(function(li, i){
+      setTimeout(function(){ li.classList.add('done'); }, 500 + i*550);
+    });
+    setTimeout(function(){ showScreen('screen-result'); }, 500 + items.length*550 + 400);
+  }
+
+  /* ==========================================================
+     結果ダッシュボード（v1と同じ挙動）
+  ========================================================== */
+  // 時間ボタンの選択切り替え
+  function selectTime(btn){
+    document.querySelectorAll('#timeBtns .time-btn').forEach(function(b){b.classList.remove('active');});
+    btn.classList.add('active');
+  }
+
+  /* ==========================================================
+     プラン切替（フル連携 ⇄ マジックリンク完結）
+     ＝提案資料の2プランを、体験で見せる。見積もりと画面が繋がる。
+  ========================================================== */
+  function setPlan(p){
+    var magic = (p === 'magic');
+    document.body.classList.toggle('plan-magic', magic);
+    document.getElementById('plFull').classList.toggle('on', !magic);
+    document.getElementById('plMagic').classList.toggle('on', magic);
+    document.getElementById('planNote').innerHTML = magic
+      ? 'マーケニスタと繋がず、届いたリンクから独立して動作　<span class="pl-price">概算 約169万円</span>'
+      : '受講状況・ポイント・つまずき検知まで連携　<span class="pl-price">概算 約202万円</span>';
+  }
+
+  /* 上位診断の開閉 */
+  function toggleLdx(){
+    var body = document.getElementById('ldxBody');
+    var open = body.style.display !== 'none';
+    body.style.display = open ? 'none' : 'block';
+    document.querySelector('.ldx-toggle').classList.toggle('open', !open);
+    document.getElementById('ldxLabel').textContent = open ? '上位診断はこちら' : '閉じる';
+    document.getElementById('ldxArrow').textContent = open ? '＋' : '−';
+  }
+  /* 講師フィードバックの追加（蓄積される様子を見せる） */
+  function addFb(){
+    var inp = document.getElementById('tfInput');
+    var v = inp.value.trim();
+    if(!v) return;
+    var d = new Date();
+    var item = document.createElement('div');
+    item.className = 'tf-item';
+    item.innerHTML = '<div class="tf-meta">佐藤 講師　'+(d.getMonth()+1)+'/'+d.getDate()+'</div><div class="tf-text"></div>';
+    item.querySelector('.tf-text').textContent = v;
+    document.getElementById('tfLog').appendChild(item);
+    inp.value = '';
+  }
+
+  // タスクのチェック＋ポイント加算
+  var ptTotal = 0;
+  function toggleTask(el, pt){
+    el.classList.toggle('done');
+    if(el.classList.contains('done')){ ptTotal += pt; }
+    else { ptTotal -= pt; }
+    if(ptTotal < 0) ptTotal = 0;
+    document.getElementById('ptNow').textContent = ptTotal;
+  }
+</script>
+
+</body>
+</html>
