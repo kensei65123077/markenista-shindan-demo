@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>マーケニスタ AIコンシェルジュ（仮）｜診断デモ 統合版</title>
+<title>マーケニスタ 学習ナビ｜診断デモ</title>
 <style>
   :root{
     /* マーケニスタ トンマナ：オレンジ＋クリーム＋温かい白（旧navy/emerald変数名は流用） */
@@ -44,8 +44,6 @@
   .plan-bar .pl-btns{display:flex;gap:5px;background:rgba(255,255,255,.12);border-radius:11px;padding:3px;}
   .plan-bar .pl-btn{border:none;background:none;color:#cfe0f5;padding:7px 14px;border-radius:8px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;}
   .plan-bar .pl-btn.on{background:#5b9e70;color:#06281f;}
-  .plan-bar .pl-note{font-size:12px;opacity:.95;}
-  .plan-bar .pl-price{font-weight:800;color:#ffd479;}
   .magic-only{display:none;}
   body.plan-magic .full-only{display:none !important;}
   body.plan-magic .magic-only{display:block;}
@@ -365,7 +363,7 @@
   .radar-legend span{display:inline-flex;align-items:center;gap:5px;}
   .lg-dot{width:10px;height:10px;border-radius:3px;display:inline-block;}
 
-  /* ---------- AI講評 ---------- */
+  /* ---------- 診断講評 ---------- */
   .review-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
   .review-item{border-radius:14px;padding:16px 18px;border:1px solid var(--line);}
   .review-item.good{background:#f0fdf9;border-color:#c7f0e2;}
@@ -434,7 +432,7 @@
     padding:2px 8px;border-radius:999px;margin-bottom:6px;
   }
 
-  /* ---------- デイリーナビ ---------- */
+  /* ---------- ジャストタスク ---------- */
   .daily-card{border:2px solid var(--emerald);position:relative;overflow:hidden;}
   .daily-card::before{
     content:"今日の見せ場";position:absolute;top:14px;right:-32px;transform:rotate(45deg);
@@ -459,15 +457,85 @@
     display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px;
   }
   .task-plan-head h4{font-size:14px;font-weight:800;color:var(--navy);}
+  .task-plan-head p{
+    color:var(--muted);
+    font-size:12px;
+    line-height:1.6;
+    margin-top:4px;
+  }
   .pt-counter{
     font-size:13px;font-weight:800;color:#1f4a33;background:var(--emerald-soft);
     border:1px solid #a7ecd0;padding:6px 14px;border-radius:999px;
   }
   .pt-counter b{color:var(--emerald);font-size:16px;}
+  .task-list{
+    display:grid;
+    gap:12px;
+  }
+  .custom-task-box{
+    border:1px solid #ffd99b;
+    border-radius:12px;
+    background:#fff8e8;
+    margin-top:14px;
+    padding:14px;
+  }
+  .custom-task-title{
+    color:var(--ink);
+    font-size:14px;
+    font-weight:900;
+    margin-bottom:10px;
+  }
+  .custom-task-form{
+    display:grid;
+    grid-template-columns:minmax(220px,1fr) 100px 120px auto;
+    gap:8px;
+    align-items:center;
+  }
+  .custom-task-form input,
+  .custom-task-form select{
+    width:100%;
+    border:1px solid var(--line);
+    border-radius:9px;
+    background:#fff;
+    color:var(--ink);
+    font-family:inherit;
+    font-size:13px;
+    min-height:40px;
+    padding:8px 10px;
+  }
+  .custom-task-form input:focus,
+  .custom-task-form select:focus{
+    outline:none;
+    border-color:#19a7d8;
+    box-shadow:0 0 0 3px rgba(25,167,216,.14);
+  }
+  .custom-task-add{
+    border:0;
+    border-radius:999px;
+    background:#303030;
+    color:#fff;
+    cursor:pointer;
+    font-family:inherit;
+    font-size:13px;
+    font-weight:900;
+    min-height:40px;
+    padding:9px 15px;
+    white-space:nowrap;
+  }
+  .custom-task-hint{
+    color:var(--muted);
+    font-size:11.5px;
+    line-height:1.6;
+    margin-top:8px;
+  }
 
   .task{
     display:flex;align-items:flex-start;gap:14px;padding:16px;border:1px solid var(--line);
-    border-radius:14px;margin-bottom:12px;background:#fff;transition:all .15s ease;cursor:pointer;
+    border-radius:14px;background:#fff;transition:all .15s ease;cursor:pointer;
+  }
+  .task.user-task{
+    border-left:4px solid #ff8a00;
+    background:#fffdf8;
   }
   .task:hover{box-shadow:var(--shadow-soft);}
   .task.done{background:#f6faf8;border-color:#d3ede2;}
@@ -481,9 +549,23 @@
   .task-title{font-size:14px;font-weight:700;color:var(--ink);transition:all .15s ease;}
   .task.done .task-title{text-decoration:line-through;color:var(--muted);}
   .task-meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;align-items:center;}
+  .task-remove{
+    align-self:center;
+    border:1px solid var(--line);
+    border-radius:999px;
+    background:#fff;
+    color:#666;
+    cursor:pointer;
+    font-family:inherit;
+    font-size:11px;
+    font-weight:800;
+    padding:6px 10px;
+  }
+  .task-remove:hover{border-color:#ff8a00;color:#303030;}
   .tag{font-size:11px;font-weight:700;padding:3px 10px;border-radius:999px;}
   .tag.time{background:#eef4fb;color:var(--navy-soft);}
   .tag.pt{background:var(--emerald-soft);color:#0b7a5b;}
+  .tag.no-pt{background:#f4f4f4;color:#666;border:1px solid #d8d8d8;}
   .tag.type-in{background:#eef2f7;color:#5a6b7f;border:1px solid #dde5ee;}
   .tag.type-out{background:#fff1e0;color:#b7791f;border:1px solid #fbe4bd;}
 
@@ -527,6 +609,2082 @@
     .seg-caption{flex:1;text-align:left;}
     .btn-next{padding:15px 32px;}
   }
+
+  /* ---------- Design pass: calm product UI ---------- */
+  :root{
+    --navy:#8b4b2f;
+    --navy-deep:#2f352f;
+    --navy-soft:#a36340;
+    --emerald:#3f745a;
+    --emerald-soft:#e7eee8;
+    --gold:#b86532;
+    --bg:#f5f5f1;
+    --card:#ffffff;
+    --cream:#efebe3;
+    --ink:#262421;
+    --muted:#68625a;
+    --line:#ded6ca;
+    --shadow:0 14px 32px rgba(34,30,25,.07);
+    --shadow-soft:0 6px 16px rgba(34,30,25,.06);
+  }
+  body{
+    background:
+      linear-gradient(180deg,#fbfbf8 0%,#f5f5f1 48%,#f1f0ea 100%);
+    letter-spacing:0;
+  }
+  .wrap{max-width:1040px;padding:0 20px 48px;}
+  .screen.active{animation:fadeIn .22s ease;}
+
+  .plan-bar{
+    background:#2f352f;
+    min-height:48px;
+    padding:7px 18px;
+    gap:14px;
+    justify-content:center;
+    border-bottom:1px solid rgba(255,255,255,.08);
+    box-shadow:none;
+  }
+  .plan-bar .pl-label{font-size:11px;color:#bfc8bd;opacity:1;}
+  .plan-bar .pl-btns{background:#242923;border-radius:8px;padding:3px;border:1px solid rgba(255,255,255,.08);}
+  .plan-bar .pl-btn{border-radius:6px;color:#d8d2c8;padding:7px 13px;font-size:12px;}
+  .plan-bar .pl-btn.on{background:#f4f0e8;color:#2f352f;}
+
+  header.top{
+    border-bottom:1px solid var(--line);
+    padding:26px 0;
+    box-shadow:0 1px 0 rgba(34,30,25,.03);
+  }
+  .top-inner{max-width:1040px;}
+  .brand .logo,.welcome-logo{
+    background:#2f352f;
+    box-shadow:none;
+    border-radius:10px;
+  }
+  .brand h1{font-size:20px;letter-spacing:0;}
+  .brand p{font-size:12px;color:var(--muted);}
+  .user-chip{border-radius:10px;background:#f8f6f0;padding:9px 14px;}
+  .user-chip .avatar{background:#dfe8df;color:#30493b;}
+
+  section{margin-top:18px;}
+  .card,.radar-box,.stat-mini,.analyzing-box{
+    border-radius:10px;
+    box-shadow:var(--shadow-soft);
+    border:1px solid var(--line);
+  }
+  .card{padding:24px;}
+  .card-title{
+    color:var(--ink);
+    font-size:13px;
+    letter-spacing:.03em;
+  }
+
+  .welcome-hero{
+    text-align:left;
+    margin-top:28px;
+    padding:54px 64px 48px;
+    border-radius:12px;
+    border:1px solid var(--line);
+    border-top:3px solid var(--gold);
+    background:#fff;
+    box-shadow:var(--shadow);
+  }
+  .welcome-hero::before,.welcome-hero::after{display:none;}
+  .welcome-logo{
+    width:46px;height:46px;
+    margin:0 0 22px;
+    font-size:23px;
+  }
+  .welcome-hero h2{
+    font-size:31px;
+    line-height:1.35;
+    letter-spacing:0;
+  }
+  .welcome-hero .kakko{color:#9d968b;}
+  .welcome-hero .lead{
+    max-width:780px;
+    color:#4b4740;
+    font-size:15px;
+    font-weight:500;
+    line-height:1.9;
+  }
+  .welcome-hero .time-note{
+    border-radius:7px;
+    padding:7px 12px;
+    background:#f8f6f0;
+    color:#70513d;
+  }
+  .welcome-points{
+    max-width:none;
+    margin-top:30px;
+    gap:0;
+    border:1px solid var(--line);
+    border-radius:10px;
+    overflow:hidden;
+  }
+  .wpoint{
+    border:0;
+    border-right:1px solid var(--line);
+    border-radius:0;
+    background:#fbfaf7;
+    padding:16px 18px;
+    text-align:left;
+    color:#38342f;
+  }
+  .wpoint:last-child{border-right:0;}
+  .wpoint .em,.q-title .qic,.stat-mini .em,.dt-ic,.lk-ic{display:none;}
+  .btn-start,.btn-next,.btn-back,.tf-add,.ldx-toggle,.time-btn,.opt,.chip,.seg{
+    border-radius:8px;
+  }
+  .btn-start,.btn-next,.tf-add{
+    background:#2f352f;
+    box-shadow:none;
+    letter-spacing:0;
+  }
+  .btn-start{
+    margin-top:30px;
+    padding:15px 30px;
+    font-size:15px;
+  }
+  .btn-start:hover,.btn-next:hover,.opt:hover,.time-btn:hover{transform:none;box-shadow:var(--shadow-soft);}
+
+  .quiz-head{margin-top:28px;}
+  .quiz-step-label{color:#51463d;font-size:12px;}
+  .quiz-step-label .pct{color:#3f745a;}
+  .qbar-track{height:6px;background:#e4ded3;}
+  .qbar-fill{background:#3f745a;}
+  .quiz-card{margin-top:16px;}
+  .q-block{margin-bottom:28px;}
+  .q-title{
+    color:var(--ink);
+    font-size:15px;
+    gap:0;
+  }
+  .q-sub,.free-hint{color:var(--muted);}
+  .q-note{
+    background:#f8f6f0;
+    border:1px solid var(--line);
+    border-radius:8px;
+    color:#5f5a52;
+  }
+  .opt{
+    border:1px solid var(--line);
+    background:#fff;
+    min-height:52px;
+    color:#292725;
+  }
+  .opt:hover,.chip:hover,.seg:hover{border-color:#b9ad9e;background:#fbfaf7;}
+  .opt.selected,.chip.selected,.seg.on,.time-btn.active{
+    background:#3f745a;
+    border-color:#3f745a;
+    color:#fff;
+    box-shadow:none;
+  }
+  .chip{
+    border:1px solid var(--line);
+    border-radius:8px;
+    background:#fff;
+  }
+  .chip::before{color:#8a8176;}
+  .free-text{
+    border:1px solid var(--line);
+    border-radius:8px;
+    background:#fff;
+  }
+  .free-text:focus{border-color:#3f745a;box-shadow:0 0 0 3px rgba(63,116,90,.12);}
+  .seg{border:1px solid var(--line);}
+  .btn-back{
+    border:1px solid var(--line);
+    padding:13px 24px;
+  }
+  .btn-next{padding:14px 32px;}
+  .btn-next.finish{background:#3f745a;box-shadow:none;}
+
+  .analyzing-box{
+    max-width:620px;
+    padding:52px 44px;
+  }
+  .spinner{
+    width:42px;height:42px;
+    border-width:4px;
+    border-color:#e2ded5;
+    border-top-color:#3f745a;
+  }
+  .analyzing-box h2{color:var(--ink);}
+  .check-list li{font-size:13px;}
+
+  .summary-grid{
+    grid-template-columns:minmax(300px,.9fr) minmax(360px,1.1fr);
+    gap:18px;
+  }
+  .score-box{
+    background:#2f352f;
+    border-radius:10px;
+    box-shadow:none;
+    min-height:320px;
+  }
+  .score-label{color:#d9d1c4;}
+  .score-num{font-size:64px;}
+  .score-num small{color:#bfb7aa;}
+  .level-badge,.now-flag{
+    background:#dfe8df;
+    color:#30493b;
+    box-shadow:none;
+  }
+  .score-bar-fill{background:#d7a06b;}
+  .score-bar-caption{color:#cfc6b8;}
+  .radar-box{
+    padding:18px 14px 12px;
+    background:#fff;
+  }
+  .radar-box .card-title{color:#51463d;}
+
+  .review-item{
+    border-radius:8px;
+    background:#fff;
+    border:1px solid var(--line);
+    border-left:4px solid #b86532;
+  }
+  .review-item.good,.review-item.grow{background:#fff;border-color:var(--line);border-left-color:#3f745a;}
+  .review-item.grow{border-left-color:#b86532;}
+  .review-item.good h4,.review-item.grow h4{color:var(--ink);}
+  .review-item p{color:#514c45;line-height:1.8;}
+  .ai-badge{
+    border-radius:6px;
+    background:#f8f6f0;
+    color:#65574c;
+    border-color:var(--line);
+  }
+  .course-reco{
+    background:#fff;
+    border:1px solid var(--line);
+    border-left:4px solid #3f745a;
+    border-radius:10px;
+    text-align:left;
+    padding:22px 24px;
+  }
+  .course-badge{
+    border-radius:6px;
+    background:#e7eee8;
+    color:#30493b;
+    box-shadow:none;
+    padding:5px 10px;
+    letter-spacing:0;
+  }
+  .course-name{color:var(--ink);font-size:19px;}
+  .course-desc{margin-left:0;margin-right:0;max-width:760px;color:#514c45;}
+
+  .ldx-toggle{
+    border-color:#8b7d70;
+    color:#51463d;
+    border-radius:8px;
+    background:#fff;
+  }
+  .ldx-toggle:hover,.ldx-toggle.open{background:#2f352f;color:#fff;border-color:#2f352f;}
+  .swot-cell,.cross-swot,.swot-note,.tf-item{border-radius:8px;}
+  .swot-cell.s,.swot-cell.w,.swot-cell.o,.swot-cell.t{
+    background:#fff;
+    border-color:var(--line);
+  }
+  .cross-swot{
+    background:#fbfaf7;
+    border-color:var(--line);
+  }
+  .cross-swot .cs-title{color:var(--ink);}
+  .tf-input{border-radius:8px;}
+
+  .roadmap{gap:6px;}
+  .rm-step{text-align:left;}
+  .rm-step:not(:last-child)::after{background:#d8d0c3;}
+  .rm-step.now:not(:last-child)::after{background:#3f745a;}
+  .rm-dot{
+    width:34px;height:34px;
+    border-width:1px;
+    border-radius:9px;
+    font-size:14px;
+  }
+  .rm-step.now .rm-dot{
+    background:#3f745a;
+    border-color:#3f745a;
+    box-shadow:none;
+  }
+  .rm-title{color:var(--ink);}
+
+  .roadmap-card{padding:26px;}
+  .roadmap-head{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:18px;
+    margin-bottom:18px;
+  }
+  .roadmap-copy{
+    color:var(--muted);
+    font-size:13px;
+    line-height:1.8;
+    max-width:690px;
+    margin-top:5px;
+  }
+  .roadmap-meta{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    justify-content:flex-end;
+  }
+  .roadmap-meta span{
+    border:1px solid var(--line);
+    border-radius:6px;
+    background:#f8f6f0;
+    color:#5e554d;
+    font-size:11px;
+    font-weight:800;
+    padding:5px 9px;
+    white-space:nowrap;
+  }
+  .roadmap{
+    grid-template-columns:repeat(4,minmax(0,1fr));
+    gap:12px;
+    align-items:stretch;
+    margin-top:0;
+  }
+  .rm-step{
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+    border:1px solid var(--line);
+    border-radius:10px;
+    background:#fff;
+    padding:16px;
+    min-height:320px;
+  }
+  .rm-step.now{border-color:#b9d0bf;background:#fbfdf9;}
+  .rm-step:not(:last-child)::after{display:none;}
+  .rm-dot{
+    margin:0;
+    width:36px;
+    height:36px;
+    border-radius:8px;
+    background:#f8f6f0;
+  }
+  .rm-step > div:last-child{
+    display:flex;
+    flex-direction:column;
+    flex:1;
+  }
+  .now-flag{align-self:flex-start;}
+  .rm-when{font-size:11px;letter-spacing:.03em;color:#6b5f52;}
+  .rm-title{font-size:15px;line-height:1.45;margin:3px 0 8px;}
+  .rm-focus{
+    color:#514c45;
+    font-size:12.5px;
+    line-height:1.7;
+    margin-bottom:10px;
+  }
+  .rm-label{
+    color:#7b7065;
+    font-size:10px;
+    font-weight:900;
+    letter-spacing:.05em;
+    margin:10px 0 5px;
+  }
+  .rm-todo{
+    display:block;
+    font-size:12px;
+    color:#4f4a44;
+    line-height:1.6;
+  }
+  .rm-todo li{margin-bottom:5px;}
+  .rm-output{
+    margin-top:auto;
+    border-top:1px solid var(--line);
+    padding-top:10px;
+    color:#5a544c;
+    font-size:11.5px;
+    line-height:1.65;
+  }
+  .rm-output b{
+    display:block;
+    color:#2f352f;
+    font-size:11px;
+    margin-bottom:2px;
+  }
+
+  .daily-card{
+    border:1px solid #3f745a;
+  }
+  .daily-card::before{display:none;}
+  .time-q{color:var(--ink);}
+  .time-btn{
+    border:1px solid var(--line);
+    color:var(--ink);
+  }
+  .pt-counter{
+    border-radius:8px;
+    background:#e7eee8;
+    color:#30493b;
+    border-color:#cbdccb;
+  }
+  .task{
+    border-radius:8px;
+    border:1px solid var(--line);
+  }
+  .chk{border-radius:6px;}
+  .tag{border-radius:6px;}
+  .tag.time,.tag.type-in,.tag.type-out,.tag.pt{
+    background:#f8f6f0;
+    border:1px solid var(--line);
+    color:#5b544c;
+  }
+  .detect-card,.link-note{
+    border-radius:10px;
+    background:#fff;
+    border:1px solid var(--line);
+  }
+  .detect-card .dt-title{color:#7a4a2e;}
+  .detect-card .dt-body{color:#5d554c;}
+  .stat-mini{text-align:left;}
+  .stat-mini .big{color:var(--ink);}
+  footer .note{background:#fff;border-color:var(--line);border-radius:8px;}
+  footer .tm{color:#51463d;opacity:.5;}
+
+  .advanced-only{display:none;}
+  body.advanced-ready .advanced-only{display:inline-flex;}
+  body.advanced-ready .basic-only{display:none;}
+  #advancedDeepDive{scroll-margin-top:70px;}
+  .advanced-result-card{
+    background:#fff;
+    border:1px solid var(--line);
+    border-left:4px solid #8b4b2f;
+    border-radius:10px;
+    padding:20px 22px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:20px;
+    box-shadow:var(--shadow-soft);
+  }
+  .advanced-kicker{
+    display:inline-flex;
+    align-items:center;
+    border:1px solid var(--line);
+    border-radius:6px;
+    background:#f8f6f0;
+    color:#65574c;
+    font-size:11px;
+    font-weight:800;
+    padding:4px 9px;
+    margin-bottom:8px;
+  }
+  .advanced-result-card h2{
+    font-size:18px;
+    line-height:1.45;
+    color:var(--ink);
+    margin:0;
+  }
+  .advanced-result-card p{
+    color:var(--muted);
+    font-size:13px;
+    margin-top:5px;
+    max-width:680px;
+  }
+  .advanced-run{
+    flex:0 0 auto;
+    border:0;
+    border-radius:8px;
+    background:#2f352f;
+    color:#fff;
+    font-family:inherit;
+    font-size:13px;
+    font-weight:800;
+    padding:12px 18px;
+    cursor:pointer;
+  }
+  .advanced-run:focus,.ldx-toggle:focus{
+    outline:2px solid rgba(63,116,90,.38);
+    outline-offset:2px;
+  }
+  body.advanced-ready .advanced-result-card{
+    border-left-color:#3f745a;
+    background:#fbfdf9;
+  }
+  body.advanced-ready .summary-grid{
+    padding:12px;
+    border:1px solid #c4d8c8;
+    border-radius:12px;
+    background:#f7fbf7;
+  }
+  body.advanced-ready .diagnosis-result-section > .card,
+  body.advanced-ready .radar-box{
+    border-color:#c4d8c8;
+  }
+  .result-chip{
+    align-items:center;
+    border:1px solid #c4d8c8;
+    border-radius:6px;
+    background:#e7eee8;
+    color:#30493b;
+    font-size:10px;
+    font-weight:800;
+    padding:3px 8px;
+    margin-left:8px;
+  }
+  .advanced-detail-card{
+    border-left:4px solid #8b4b2f;
+  }
+  body.advanced-ready .advanced-detail-card{
+    border-left-color:#3f745a;
+  }
+  body.advanced-ready .ldx-body{
+    animation:fadeIn .2s ease;
+  }
+
+  @media(max-width:720px){
+    .wrap{padding:0 14px 40px;}
+    .plan-bar{justify-content:flex-start;}
+    .welcome-hero{padding:34px 24px;}
+    .welcome-hero h2{font-size:24px;}
+    .welcome-points{grid-template-columns:1fr;}
+    .wpoint{border-right:0;border-bottom:1px solid var(--line);}
+    .wpoint:last-child{border-bottom:0;}
+    .summary-grid{grid-template-columns:1fr;}
+    .opt-grid,.opt-grid.cols4,.opt-grid.cols3{grid-template-columns:1fr;}
+    .score-box{min-height:260px;}
+    .advanced-result-card{align-items:flex-start;flex-direction:column;}
+    .advanced-run{width:100%;}
+    .roadmap-head{flex-direction:column;}
+    .roadmap-meta{justify-content:flex-start;}
+    .roadmap{grid-template-columns:1fr;}
+    .rm-step{min-height:0;}
+  }
+
+  /* ---------- Markenista tone refresh ---------- */
+  :root{
+    --navy:#ff8a00;
+    --navy-deep:#303030;
+    --navy-soft:#ffad32;
+    --emerald:#19a7d8;
+    --emerald-soft:#eaf8fb;
+    --gold:#ffb833;
+    --bg:#ffffff;
+    --cream:#fff7e7;
+    --ink:#303030;
+    --muted:#666666;
+    --line:#dcdcdc;
+    --shadow:0 10px 24px rgba(0,0,0,.08);
+    --shadow-soft:0 4px 14px rgba(0,0,0,.06);
+  }
+  body{
+    background:#fff;
+    color:#303030;
+  }
+  .wrap{max-width:1080px;}
+
+  .plan-bar{
+    background:#fff;
+    color:#303030;
+    min-height:52px;
+    border-bottom:1px solid #d8d8d8;
+    box-shadow:0 1px 0 rgba(0,0,0,.04);
+  }
+  .plan-bar .pl-label{
+    color:#303030;
+    font-weight:800;
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+  }
+  .plan-bar .pl-label::before{
+    content:"";
+    width:14px;
+    height:14px;
+    border-radius:4px;
+    background:#ff8a00;
+    display:inline-block;
+  }
+  .plan-bar .pl-btns{
+    background:#f6f6f6;
+    border:1px solid #d8d8d8;
+    border-radius:999px;
+    padding:4px;
+  }
+  .plan-bar .pl-btn{
+    color:#333;
+    border-radius:999px;
+    padding:7px 16px;
+  }
+  .plan-bar .pl-btn.on{
+    background:#303030;
+    color:#fff;
+  }
+
+  header.top{
+    background:#fff;
+    border-bottom:1px solid #d8d8d8;
+  }
+  .brand .logo,.welcome-logo{
+    background:#ff8a00;
+    color:#fff;
+    border-radius:8px;
+  }
+  .user-chip{
+    background:#fff8e8;
+    border-color:#ffd99b;
+  }
+  .user-chip .avatar{
+    background:#ffe1a5;
+    color:#303030;
+  }
+
+  .welcome-hero{
+    background:
+      linear-gradient(135deg,#dff7ff 0%,#ffffff 48%,#fff4cf 100%);
+    border:1px solid #b7dcec;
+    border-top:5px solid #159bd3;
+    box-shadow:0 14px 30px rgba(0,126,180,.12);
+  }
+  .welcome-hero h2{
+    color:#303030;
+  }
+  .welcome-hero .lead{
+    color:#4b4b4b;
+  }
+  .welcome-hero .time-note{
+    background:#fff;
+    border-color:#ffd99b;
+    color:#303030;
+  }
+  .welcome-points{
+    border-color:#d3eaf1;
+    background:#fff;
+  }
+  .wpoint{
+    background:rgba(255,255,255,.72);
+    border-color:#d3eaf1;
+  }
+  .wpoint:nth-child(1){background:#e6f8fc;}
+  .wpoint:nth-child(2){background:#fff7df;}
+  .wpoint:nth-child(3){background:#f4e4f5;}
+
+  .btn-start,.btn-next,.tf-add{
+    background:#ff8a00;
+    color:#fff;
+    border-radius:999px;
+    box-shadow:0 5px 0 #c76b00;
+  }
+  .btn-start:hover,.btn-next:hover{
+    background:#ff990f;
+    box-shadow:0 5px 0 #c76b00;
+  }
+  .btn-back,.ldx-toggle,.advanced-run{
+    border-radius:999px;
+  }
+  .advanced-run,.ldx-toggle.open{
+    background:#303030;
+    color:#fff;
+    box-shadow:none;
+  }
+  .ldx-toggle{
+    border-color:#303030;
+    color:#303030;
+  }
+
+  .card,.radar-box,.stat-mini,.analyzing-box{
+    border-color:#d8d8d8;
+    border-radius:12px;
+    box-shadow:0 8px 18px rgba(0,0,0,.06);
+  }
+  .card-title{
+    color:#303030;
+  }
+  .qbar-fill,.opt.selected,.chip.selected,.seg.on,.time-btn.active{
+    background:#19a7d8;
+    border-color:#19a7d8;
+  }
+  .free-text:focus{
+    border-color:#19a7d8;
+    box-shadow:0 0 0 3px rgba(25,167,216,.14);
+  }
+
+  .score-box{
+    background:linear-gradient(135deg,#11a8df 0%,#087fc3 100%);
+    color:#fff;
+    box-shadow:0 10px 22px rgba(8,127,195,.18);
+  }
+  .score-label,.score-bar-caption,.score-num small{
+    color:rgba(255,255,255,.86);
+  }
+  .score-bar-track{
+    background:rgba(255,255,255,.28);
+  }
+  .score-bar-fill{
+    background:#ffb833;
+  }
+  .level-badge,.now-flag,.course-badge,.result-chip{
+    background:#fff7d8;
+    color:#303030;
+    border:1px solid #ffd99b;
+  }
+  .review-item.good{
+    background:#f3fbfd;
+    border-left-color:#19a7d8;
+  }
+  .review-item.grow{
+    background:#fff8e8;
+    border-left-color:#ff8a00;
+  }
+  .course-reco{
+    background:#fff;
+    border-left-color:#ff8a00;
+  }
+  .course-name{
+    color:#303030;
+  }
+  .course-desc b{
+    color:#108dbc;
+  }
+
+  body.advanced-ready .summary-grid,
+  body.advanced-ready .advanced-result-card{
+    background:#eefaff;
+    border-color:#b7dcec;
+  }
+  body.advanced-ready .diagnosis-result-section > .card,
+  body.advanced-ready .radar-box,
+  body.advanced-ready .advanced-detail-card{
+    border-color:#b7dcec;
+  }
+  .advanced-result-card{
+    border-left-color:#ff8a00;
+  }
+  body.advanced-ready .advanced-result-card,
+  body.advanced-ready .advanced-detail-card{
+    border-left-color:#19a7d8;
+  }
+  .advanced-kicker,.ai-badge,.roadmap-meta span,.tag.time,.tag.type-in,.tag.type-out,.tag.pt{
+    background:#fff;
+    border-color:#d8d8d8;
+    color:#303030;
+  }
+
+  .roadmap-card{
+    background:#fffdf6;
+  }
+  .roadmap-copy{
+    color:#555;
+  }
+  .rm-step{
+    border-color:#d8d8d8;
+  }
+  .rm-step:nth-child(1){
+    background:#eaf8fb;
+    border-color:#b7dcec;
+  }
+  .rm-step:nth-child(2){
+    background:#fff8e8;
+    border-color:#ffd99b;
+  }
+  .rm-step:nth-child(3){
+    background:#f8e8f6;
+    border-color:#e6c5e2;
+  }
+  .rm-step:nth-child(4){
+    background:#eaf6df;
+    border-color:#cce5b9;
+  }
+  .rm-dot{
+    background:#fff;
+    border-color:#d8d8d8;
+    color:#303030;
+  }
+  .rm-step.now .rm-dot{
+    background:#19a7d8;
+    border-color:#19a7d8;
+  }
+  .rm-output{
+    border-top-color:rgba(0,0,0,.12);
+  }
+
+  .daily-card{
+    border-color:#19a7d8;
+    background:#fff;
+  }
+  .pt-counter{
+    background:#fff7d8;
+    border-color:#ffd99b;
+    color:#303030;
+  }
+  .detect-card,.link-note{
+    background:#fff8e8;
+    border-color:#ffd99b;
+  }
+  footer{
+    background:transparent;
+    color:#777;
+    padding:0;
+    margin-top:34px;
+  }
+  footer .note{
+    background:#fff;
+    color:#777;
+    border-color:#d8d8d8;
+  }
+  footer .tm{
+    color:#303030;
+    opacity:.45;
+  }
+
+  /* ---------- Readability and conversion UX ---------- */
+  body{
+    font-family:"BIZ UDPGothic","Yu Gothic UI","Hiragino Sans","Hiragino Kaku Gothic ProN",Meiryo,sans-serif;
+    font-size:15px;
+    line-height:1.65;
+    font-feature-settings:"palt";
+  }
+  .brand h1,.welcome-hero h2,.card-title,.score-num,.course-name,.rm-title{
+    letter-spacing:0;
+  }
+  .card-title{
+    font-size:17px;
+    line-height:1.45;
+    font-weight:900;
+  }
+  .q-title,.time-q,.task-plan-head h4{
+    font-size:16px;
+  }
+  .q-sub,.course-note,footer .note{
+    font-size:12px;
+  }
+  .review-grid{
+    gap:12px;
+  }
+  .review-item{
+    padding:16px;
+  }
+  .review-item p,.course-desc,.advanced-result-card p,.ldx-sub{
+    font-size:14px;
+    line-height:1.85;
+  }
+  .course-reco{
+    text-align:left;
+    padding:20px;
+  }
+  .course-badge{
+    margin-bottom:10px;
+  }
+  .course-name{
+    font-size:21px;
+    line-height:1.45;
+  }
+  .course-desc{
+    max-width:none;
+    margin:10px 0 0;
+  }
+  .insight-summary{
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:12px;
+    margin-bottom:16px;
+  }
+  .insight-card{
+    border:1px solid #d8d8d8;
+    border-radius:12px;
+    background:#fff;
+    padding:14px 15px;
+  }
+  .insight-card:nth-child(1){background:#eaf8fb;border-color:#b7dcec;}
+  .insight-card:nth-child(2){background:#fff8e8;border-color:#ffd99b;}
+  .insight-card:nth-child(3){background:#f4e4f5;border-color:#e6c5e2;}
+  .insight-label{
+    display:block;
+    color:#666;
+    font-size:11px;
+    font-weight:800;
+    margin-bottom:4px;
+  }
+  .insight-card b{
+    display:block;
+    color:#303030;
+    font-size:17px;
+    line-height:1.35;
+  }
+  .review-item h4{
+    font-size:15px;
+  }
+  .review-lead{
+    color:#555;
+    font-size:13px;
+    line-height:1.55;
+    margin-bottom:10px;
+  }
+  .review-points{
+    display:grid;
+    gap:7px;
+    list-style:none;
+    margin:0 0 12px;
+    padding:0;
+  }
+  .review-points li{
+    display:flex;
+    gap:8px;
+    align-items:flex-start;
+    background:rgba(255,255,255,.66);
+    border:1px solid rgba(0,0,0,.08);
+    border-radius:9px;
+    color:#3e3e3e;
+    font-size:12.5px;
+    line-height:1.45;
+    padding:8px 10px;
+  }
+  .review-points li::before{
+    content:"";
+    width:7px;
+    height:7px;
+    border-radius:50%;
+    background:#19a7d8;
+    flex:0 0 auto;
+    margin-top:.65em;
+  }
+  .review-item.grow .review-points li::before{
+    background:#ff8a00;
+  }
+  .review-next{
+    border-top:1px solid rgba(0,0,0,.1);
+    color:#303030;
+    font-size:13px;
+    font-weight:800;
+    line-height:1.5;
+    margin-top:10px;
+    padding-top:10px;
+  }
+  .score-value-advanced,.score-value-coach,
+  .score-label-advanced,.score-label-coach,
+  .score-caption-advanced,.score-caption-coach,
+  .level-advanced,.level-coach{
+    display:none;
+  }
+  body.advanced-ready .score-value-basic,
+  body.advanced-ready .score-label-basic,
+  body.advanced-ready .score-caption-basic,
+  body.advanced-ready .level-basic{
+    display:none !important;
+  }
+  body.advanced-ready .score-value-advanced,
+  body.advanced-ready .score-label-advanced{
+    display:inline;
+  }
+  body.advanced-ready .score-caption-advanced{
+    display:block;
+  }
+  body.advanced-ready .level-advanced{
+    display:inline;
+  }
+  body.coach-fb-ready .score-value-advanced,
+  body.coach-fb-ready .score-label-advanced,
+  body.coach-fb-ready .score-caption-advanced,
+  body.coach-fb-ready .level-advanced{
+    display:none !important;
+  }
+  body.coach-fb-ready .score-value-coach,
+  body.coach-fb-ready .score-label-coach{
+    display:inline;
+  }
+  body.coach-fb-ready .score-caption-coach{
+    display:block;
+  }
+  body.coach-fb-ready .level-coach{
+    display:inline;
+  }
+  body.advanced-ready .score-bar-fill{width:58%;}
+  body.coach-fb-ready .score-bar-fill{width:64%;background:#ffd15c;}
+  .score-update-chip{
+    display:none;
+    align-items:center;
+    gap:9px;
+    border:1px solid rgba(142,227,255,.38);
+    border-radius:12px;
+    background:rgba(255,255,255,.12);
+    color:#fff;
+    margin-top:10px;
+    padding:9px 10px;
+  }
+  body.advanced-ready .score-update-chip{
+    display:flex;
+  }
+  .score-update-dot{
+    width:10px;
+    height:10px;
+    border-radius:50%;
+    background:#8ee3ff;
+    box-shadow:0 0 0 5px rgba(142,227,255,.16);
+    flex:0 0 auto;
+  }
+  body.coach-fb-ready .score-update-dot{
+    background:#ffd15c;
+    box-shadow:0 0 0 5px rgba(255,209,92,.16);
+  }
+  .score-update-chip b{
+    display:block;
+    font-size:12px;
+    line-height:1.25;
+  }
+  .score-update-chip small{
+    display:block;
+    color:rgba(255,255,255,.68);
+    font-size:10.5px;
+    font-weight:800;
+    line-height:1.45;
+    margin-top:2px;
+  }
+  .badge-board{
+    border-top:1px solid rgba(255,255,255,.16);
+    margin-top:14px;
+    padding-top:12px;
+  }
+  .badge-board-title{
+    color:rgba(255,255,255,.68);
+    font-size:10px;
+    font-weight:900;
+    letter-spacing:.05em;
+    margin-bottom:8px;
+  }
+  .diag-badges{
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:8px;
+  }
+  .diag-badge{
+    position:relative;
+    min-height:112px;
+    border:1px solid rgba(255,255,255,.22);
+    border-radius:12px;
+    background:rgba(255,255,255,.1);
+    color:#fff;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:flex-start;
+    padding:10px 8px 9px;
+    text-align:center;
+    overflow:hidden;
+  }
+  .diag-badge::before{
+    content:"";
+    position:absolute;
+    left:12px;
+    right:12px;
+    top:12px;
+    height:54px;
+    border-radius:999px;
+    background:radial-gradient(circle at 50% 0%,rgba(255,255,255,.22),transparent 58%);
+    pointer-events:none;
+  }
+  .diag-badge .badge-name{
+    display:block;
+    color:rgba(255,255,255,.78);
+    font-size:10px;
+    font-weight:900;
+    line-height:1.35;
+    margin-top:7px;
+  }
+  .diag-badge b{
+    display:block;
+    color:#fff;
+    font-size:10.5px;
+    line-height:1.35;
+    margin-top:4px;
+  }
+  .badge-medal{
+    position:relative;
+    width:54px;
+    height:54px;
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:transparent;
+    font-size:0;
+    box-shadow:
+      inset 0 0 0 4px rgba(255,255,255,.34),
+      inset 0 0 0 8px rgba(255,255,255,.12),
+      0 7px 14px rgba(0,0,0,.18);
+  }
+  .badge-medal::before{
+    content:"";
+    position:absolute;
+    inset:-5px;
+    border-radius:50%;
+    border:2px solid rgba(255,255,255,.28);
+  }
+  .badge-medal::after{
+    content:"";
+    position:absolute;
+    inset:8px;
+    border-radius:50%;
+    border:1px solid rgba(255,255,255,.38);
+    background:
+      radial-gradient(circle at 34% 28%,rgba(255,255,255,.46),transparent 16px),
+      repeating-conic-gradient(from 0deg,rgba(255,255,255,.18) 0deg 8deg,transparent 8deg 16deg);
+    opacity:.9;
+  }
+  .diag-badge.basic .badge-medal{
+    background:
+      radial-gradient(circle at 34% 26%,#ffd8aa 0%,transparent 30%),
+      conic-gradient(from 20deg,#9d5a27,#f2b06c,#c97933,#ffd3a0,#9d5a27);
+  }
+  .diag-badge.adv .badge-medal{
+    background:
+      radial-gradient(circle at 34% 26%,#d9f8ff 0%,transparent 30%),
+      conic-gradient(from 20deg,#08739f,#8ee3ff,#16a6d5,#d9f8ff,#08739f);
+  }
+  .diag-badge.coach .badge-medal{
+    background:
+      radial-gradient(circle at 34% 26%,#fff2bd 0%,transparent 30%),
+      conic-gradient(from 20deg,#d26f00,#ffe194,#ff8a00,#fff2bd,#d26f00);
+    color:transparent;
+  }
+  .diag-badge.coach .badge-medal::before{
+    border-color:rgba(255,225,148,.7);
+  }
+  .diag-badge.adv .badge-medal,
+  .diag-badge.coach .badge-medal{
+    opacity:.2;
+    background:transparent;
+    color:rgba(255,255,255,.48);
+    box-shadow:none;
+    border:2px dashed rgba(255,255,255,.48);
+  }
+  .diag-badge.adv .badge-medal::after,
+  .diag-badge.coach .badge-medal::after{
+    background:transparent;
+    opacity:.45;
+  }
+  .diag-badge.adv .badge-medal::before,
+  .diag-badge.adv .badge-medal::after,
+  .diag-badge.coach .badge-medal::before,
+  .diag-badge.coach .badge-medal::after{
+    border-color:rgba(255,255,255,.24);
+  }
+  .diag-badge .copy-ready{display:none;}
+  .diag-badge.basic{
+    border-color:rgba(242,176,108,.7);
+    background:linear-gradient(180deg,rgba(255,255,255,.2),rgba(255,255,255,.08));
+  }
+  .diag-badge.adv,.diag-badge.coach{
+    border-style:dashed;
+    border-color:rgba(255,255,255,.28);
+  }
+  .diag-badge.adv::after,.diag-badge.coach::after{
+    content:"未取得";
+    position:absolute;
+    top:8px;
+    right:7px;
+    border:1px solid rgba(255,255,255,.25);
+    border-radius:999px;
+    color:rgba(255,255,255,.68);
+    font-size:9px;
+    font-weight:900;
+    padding:3px 7px;
+  }
+  body.advanced-ready .diag-badge.adv{
+    border-style:solid;
+    border-color:#8ee3ff;
+    background:linear-gradient(180deg,rgba(25,167,216,.5),rgba(255,255,255,.1));
+  }
+  body.advanced-ready .diag-badge.adv::after,
+  body.coach-fb-ready .diag-badge.coach::after{
+    content:"取得済み";
+    background:rgba(255,255,255,.2);
+    color:#fff;
+  }
+  body.advanced-ready .diag-badge.adv .badge-medal{
+    opacity:1;
+    background:
+      radial-gradient(circle at 34% 26%,#d9f8ff 0%,transparent 30%),
+      conic-gradient(from 20deg,#08739f,#8ee3ff,#16a6d5,#d9f8ff,#08739f);
+    color:transparent;
+    box-shadow:
+      inset 0 0 0 4px rgba(255,255,255,.34),
+      inset 0 0 0 8px rgba(255,255,255,.12),
+      0 7px 14px rgba(0,0,0,.18);
+    border:0;
+  }
+  body.advanced-ready .diag-badge.adv .badge-medal::before{
+    border-color:rgba(142,227,255,.68);
+  }
+  body.advanced-ready .diag-badge.adv .badge-medal::after{
+    border-color:rgba(255,255,255,.45);
+  }
+  body.advanced-ready .diag-badge.adv .copy-locked,
+  body.coach-fb-ready .diag-badge.coach .copy-locked{
+    display:none;
+  }
+  body.advanced-ready .diag-badge.adv .copy-ready,
+  body.coach-fb-ready .diag-badge.coach .copy-ready{
+    display:block;
+  }
+  body.coach-fb-ready .diag-badge.coach{
+    border-style:solid;
+    border-color:#ffd15c;
+    background:linear-gradient(180deg,rgba(255,138,0,.55),rgba(255,255,255,.14));
+    box-shadow:0 0 0 3px rgba(255,209,92,.18);
+  }
+  body.coach-fb-ready .diag-badge.coach .badge-medal{
+    opacity:1;
+    background:
+      radial-gradient(circle at 34% 26%,#fff2bd 0%,transparent 30%),
+      conic-gradient(from 20deg,#d26f00,#ffe194,#ff8a00,#fff2bd,#d26f00);
+    color:transparent;
+    box-shadow:
+      inset 0 0 0 4px rgba(255,255,255,.4),
+      inset 0 0 0 8px rgba(255,255,255,.16),
+      0 7px 14px rgba(0,0,0,.2);
+    border:0;
+  }
+  body.coach-fb-ready .diag-badge.coach .badge-medal::before{
+    border-color:rgba(255,225,148,.78);
+  }
+  body.coach-fb-ready .diag-badge.coach .badge-medal::after{
+    border-color:rgba(48,48,48,.2);
+  }
+  .radar-head{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:10px;
+    width:100%;
+    padding:0 8px;
+  }
+  .radar-badge-stack{
+    display:flex;
+    justify-content:flex-end;
+    min-width:118px;
+  }
+  .radar-mini-badge{
+    display:inline-flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    width:82px;
+    min-height:78px;
+    border:1px solid #d8d8d8;
+    border-radius:14px;
+    background:#fffdf6;
+    color:#303030;
+    font-size:9.5px;
+    font-weight:900;
+    line-height:1.35;
+    padding:8px;
+    text-align:center;
+    white-space:normal;
+  }
+  .radar-mini-badge .mini-medal{
+    width:34px;
+    height:34px;
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:0;
+    color:transparent;
+    margin-bottom:6px;
+    box-shadow:inset 0 0 0 4px rgba(255,255,255,.42),0 5px 10px rgba(0,0,0,.12);
+  }
+  .radar-mini-badge .mini-medal::after{
+    content:"";
+    position:absolute;
+    width:18px;
+    height:18px;
+    border-radius:50%;
+    border:1px solid rgba(255,255,255,.4);
+    background:radial-gradient(circle at 35% 30%,rgba(255,255,255,.45),transparent 60%);
+  }
+  .radar-mini-badge.basic .mini-medal{
+    position:relative;
+    background:conic-gradient(from 20deg,#9d5a27,#f2b06c,#c97933,#ffd3a0,#9d5a27);
+    color:#fff;
+  }
+  .radar-mini-badge.advanced,
+  .radar-mini-badge.coach{
+    display:none;
+  }
+  body.advanced-ready .radar-mini-badge.basic{display:none;}
+  body.advanced-ready .radar-mini-badge.advanced{
+    display:inline-flex;
+    background:#eaf8fb;
+    border-color:#19a7d8;
+    color:#08739f;
+  }
+  .radar-mini-badge.advanced .mini-medal{
+    position:relative;
+    background:conic-gradient(from 20deg,#08739f,#8ee3ff,#16a6d5,#d9f8ff,#08739f);
+    color:#fff;
+  }
+  body.coach-fb-ready .radar-mini-badge.advanced{display:none;}
+  body.coach-fb-ready .radar-mini-badge.coach{
+    display:inline-flex;
+    background:#fff8e8;
+    border-color:#ff8a00;
+    color:#303030;
+    box-shadow:0 4px 12px rgba(255,138,0,.2);
+  }
+  .radar-mini-badge.coach .mini-medal{
+    position:relative;
+    background:conic-gradient(from 20deg,#d26f00,#ffe194,#ff8a00,#fff2bd,#d26f00);
+    color:#303030;
+  }
+
+  .roadmap-card{
+    padding:24px;
+    background:#fff;
+  }
+  .roadmap-head{
+    margin-bottom:16px;
+  }
+  .roadmap-copy{
+    max-width:620px;
+    line-height:1.65;
+  }
+  .roadmap-flow{
+    position:relative;
+    display:grid;
+    grid-template-columns:repeat(4,minmax(0,1fr));
+    gap:14px;
+    margin-top:18px;
+  }
+  .roadmap-flow::before{
+    content:"";
+    position:absolute;
+    top:31px;
+    left:8%;
+    right:8%;
+    height:5px;
+    border-radius:999px;
+    background:linear-gradient(90deg,#19a7d8 0%,#19a7d8 28%,#ffb833 28%,#ffb833 60%,#ff8a00 60%,#ff8a00 100%);
+    opacity:.28;
+  }
+  .road-phase{
+    position:relative;
+    background:#fff;
+    border:1px solid #d8d8d8;
+    border-radius:14px;
+    padding:14px;
+    min-height:244px;
+    box-shadow:0 6px 16px rgba(0,0,0,.05);
+  }
+  .road-main{
+    display:flex;
+    align-items:flex-start;
+    gap:10px;
+    min-height:70px;
+  }
+  .road-phase:nth-child(1){background:#eaf8fb;border-color:#b7dcec;}
+  .road-phase:nth-child(2){background:#fff8e8;border-color:#ffd99b;}
+  .road-phase:nth-child(3){background:#f8e8f6;border-color:#e6c5e2;}
+  .road-phase:nth-child(4){background:#eaf6df;border-color:#cce5b9;}
+  .road-badge{
+    position:relative;
+    z-index:1;
+    width:42px;
+    height:42px;
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:#fff;
+    border:3px solid #19a7d8;
+    color:#303030;
+    font-size:16px;
+    font-weight:900;
+    margin-bottom:0;
+    flex:0 0 auto;
+  }
+  .road-phase:nth-child(2) .road-badge{border-color:#ffb833;}
+  .road-phase:nth-child(3) .road-badge{border-color:#e6a7df;}
+  .road-phase:nth-child(4) .road-badge{border-color:#91c96b;}
+  .road-time{
+    display:block;
+    color:#666;
+    font-size:11px;
+    font-weight:800;
+    margin-bottom:3px;
+  }
+  .road-title{
+    color:#303030;
+    font-size:17px;
+    font-weight:900;
+    line-height:1.35;
+    margin-bottom:0;
+  }
+  .road-meter{
+    width:100%;
+    height:8px;
+    border-radius:999px;
+    background:rgba(255,255,255,.74);
+    border:1px solid rgba(0,0,0,.08);
+    margin:8px 0 10px;
+    overflow:hidden;
+  }
+  .road-meter span{
+    display:block;
+    height:100%;
+    border-radius:inherit;
+    background:#19a7d8;
+  }
+  .road-phase.p0 .road-meter span{width:18%;}
+  .road-phase.p1 .road-meter span{width:42%;background:#ffb833;}
+  .road-phase.p3 .road-meter span{width:68%;background:#e6a7df;}
+  .road-phase.p6 .road-meter span{width:100%;background:#91c96b;}
+  .road-output{
+    display:grid;
+    grid-template-columns:auto 1fr;
+    align-items:center;
+    gap:8px;
+    border-top:1px solid rgba(0,0,0,.1);
+    margin-top:10px;
+    padding-top:10px;
+  }
+  .road-output span{
+    color:#666;
+    font-size:10.5px;
+    font-weight:900;
+  }
+  .road-output b{
+    color:#303030;
+    font-size:13px;
+    line-height:1.35;
+  }
+  .road-kpi{
+    display:inline-flex;
+    align-items:center;
+    border-radius:999px;
+    background:#fff;
+    border:1px solid rgba(0,0,0,.1);
+    color:#303030;
+    font-size:11px;
+    font-weight:800;
+    padding:4px 9px;
+    margin-bottom:10px;
+  }
+  .road-actions{
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+  }
+  .road-actions span{
+    background:rgba(255,255,255,.72);
+    border:1px solid rgba(0,0,0,.08);
+    border-radius:7px;
+    color:#333;
+    font-size:11.5px;
+    font-weight:700;
+    padding:5px 7px;
+  }
+
+  .advanced-upsell-card{
+    overflow:hidden;
+    border:2px solid #ffd99b;
+    background:linear-gradient(135deg,#fff8e8 0%,#fff 58%,#eaf8fb 100%);
+  }
+  .upsell-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:18px;
+  }
+  .upsell-kicker{
+    display:inline-flex;
+    align-items:center;
+    border-radius:999px;
+    background:#ff8a00;
+    color:#fff;
+    font-size:11px;
+    font-weight:900;
+    padding:5px 10px;
+    margin-bottom:8px;
+  }
+  .upsell-head h3{
+    font-size:22px;
+    line-height:1.35;
+    margin:0;
+  }
+  .upsell-head p{
+    color:#555;
+    font-size:13.5px;
+    line-height:1.75;
+    margin-top:6px;
+    max-width:660px;
+  }
+  .upsell-btn{
+    flex:0 0 auto;
+    border:0;
+    border-radius:999px;
+    background:#303030;
+    color:#fff;
+    cursor:pointer;
+    font-family:inherit;
+    font-size:14px;
+    font-weight:900;
+    padding:13px 22px;
+  }
+  .upsell-steps{
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:12px;
+    margin-top:16px;
+  }
+  .upsell-step{
+    background:#fff;
+    border:1px solid #d8d8d8;
+    border-radius:12px;
+    padding:13px;
+  }
+  .upsell-step b{
+    display:block;
+    font-size:14px;
+    margin-bottom:4px;
+  }
+  .upsell-step span{
+    color:#666;
+    font-size:12px;
+    line-height:1.65;
+  }
+  .ldx-body{
+    margin-top:18px;
+  }
+  .advanced-form{
+    background:#fff;
+    border:1px solid #d8d8d8;
+    border-radius:14px;
+    padding:16px;
+  }
+  .advanced-form-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:16px;
+    margin-bottom:14px;
+  }
+  .advanced-form-head h4{
+    color:#303030;
+    font-size:18px;
+    line-height:1.45;
+    margin:0;
+  }
+  .advanced-form-head p{
+    color:#666;
+    font-size:13px;
+    line-height:1.75;
+    margin-top:5px;
+    max-width:720px;
+  }
+  .form-time{
+    flex:0 0 auto;
+    border:1px solid #ffd99b;
+    border-radius:999px;
+    background:#fff7d8;
+    color:#303030;
+    font-size:11px;
+    font-weight:900;
+    padding:5px 10px;
+  }
+  .advanced-form-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+  }
+  .adv-q-card{
+    border:1px solid #d8d8d8;
+    border-radius:12px;
+    background:#fffdf8;
+    padding:14px;
+  }
+  .adv-q-top{
+    display:flex;
+    align-items:center;
+    gap:9px;
+    margin-bottom:8px;
+  }
+  .adv-q-num{
+    width:30px;
+    height:30px;
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:#19a7d8;
+    color:#fff;
+    font-size:11px;
+    font-weight:900;
+    flex:0 0 auto;
+  }
+  .adv-q-card:nth-child(2) .adv-q-num{background:#ff8a00;}
+  .adv-q-card:nth-child(3) .adv-q-num{background:#e6a7df;}
+  .adv-q-card:nth-child(4) .adv-q-num{background:#91c96b;}
+  .adv-q-card h5{
+    color:#303030;
+    font-size:14px;
+    line-height:1.45;
+    margin:0;
+  }
+  .adv-choice-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+    margin:8px 0;
+  }
+  .adv-choice{
+    border:1px solid #d8d8d8;
+    border-radius:999px;
+    background:#fff;
+    color:#333;
+    cursor:pointer;
+    font-family:inherit;
+    font-size:11.5px;
+    font-weight:800;
+    padding:6px 9px;
+  }
+  .adv-choice.on{
+    background:#303030;
+    border-color:#303030;
+    color:#fff;
+  }
+  .adv-textarea{
+    width:100%;
+    min-height:86px;
+    border:1px solid #d8d8d8;
+    border-radius:10px;
+    color:#303030;
+    font-family:inherit;
+    font-size:13px;
+    line-height:1.7;
+    padding:10px 12px;
+    resize:vertical;
+  }
+  .adv-textarea:focus{
+    outline:none;
+    border-color:#19a7d8;
+    box-shadow:0 0 0 3px rgba(25,167,216,.14);
+  }
+  .adv-create-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:14px;
+    border-top:1px solid #e5e5e5;
+    margin-top:14px;
+    padding-top:14px;
+  }
+  .adv-create-row span{
+    color:#666;
+    font-size:12.5px;
+    line-height:1.65;
+  }
+  .adv-create-btn{
+    flex:0 0 auto;
+    border:0;
+    border-radius:999px;
+    background:#ff8a00;
+    box-shadow:0 4px 0 #c76b00;
+    color:#fff;
+    cursor:pointer;
+    font-family:inherit;
+    font-size:14px;
+    font-weight:900;
+    padding:12px 20px;
+  }
+  .advanced-analyzing{
+    border:1px solid #b7dcec;
+    border-radius:14px;
+    background:
+      radial-gradient(circle at 16% 0%,rgba(25,167,216,.2),transparent 30%),
+      linear-gradient(135deg,#fff 0%,#eaf8fb 100%);
+    padding:20px;
+    margin-top:16px;
+  }
+  .advanced-analyzing-top{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    margin-bottom:14px;
+  }
+  .mini-spinner{
+    width:34px;
+    height:34px;
+    border-radius:50%;
+    border:4px solid rgba(25,167,216,.18);
+    border-top-color:#19a7d8;
+    animation:spin .9s linear infinite;
+    flex:0 0 auto;
+  }
+  .advanced-analyzing h4{
+    color:#303030;
+    font-size:18px;
+    line-height:1.4;
+    margin:0;
+  }
+  .advanced-analyzing p{
+    color:#555;
+    font-size:12.5px;
+    line-height:1.65;
+    margin-top:3px;
+  }
+  .advanced-analysis-steps{
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:9px;
+    list-style:none;
+    margin:0;
+    padding:0;
+  }
+  .advanced-analysis-steps li{
+    border:1px solid rgba(0,0,0,.08);
+    border-radius:11px;
+    background:rgba(255,255,255,.72);
+    color:#777;
+    font-size:12px;
+    font-weight:900;
+    padding:10px;
+    transition:all .2s ease;
+  }
+  .advanced-analysis-steps li::before{
+    content:"";
+    display:inline-block;
+    width:8px;
+    height:8px;
+    border-radius:50%;
+    background:#d8d8d8;
+    margin-right:7px;
+    vertical-align:1px;
+  }
+  .advanced-analysis-steps li.done{
+    border-color:#19a7d8;
+    color:#303030;
+    background:#fff;
+    box-shadow:0 5px 14px rgba(25,167,216,.12);
+  }
+  .advanced-analysis-steps li.done::before{
+    background:#19a7d8;
+    box-shadow:0 0 0 4px rgba(25,167,216,.12);
+  }
+  .advanced-generated{
+    margin-top:16px;
+  }
+  .advanced-summary-mini{
+    border:1px solid #b7dcec;
+    border-radius:12px;
+    background:#eaf8fb;
+    padding:14px;
+    margin-bottom:12px;
+  }
+  .advanced-summary-mini > span{
+    display:inline-flex;
+    border-radius:999px;
+    background:#fff;
+    color:#303030;
+    font-size:11px;
+    font-weight:900;
+    padding:4px 9px;
+    margin-bottom:8px;
+  }
+  .advanced-summary-mini b{
+    display:block;
+    color:#303030;
+    font-size:17px;
+    line-height:1.45;
+  }
+  .advanced-summary-mini p{
+    color:#555;
+    font-size:13px;
+    line-height:1.75;
+    margin-top:5px;
+  }
+  .advanced-key-grid{
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:8px;
+    margin-top:12px;
+  }
+  .advanced-key{
+    border:1px solid rgba(0,0,0,.08);
+    border-radius:10px;
+    background:#fff;
+    padding:10px;
+  }
+  .advanced-key small{
+    display:block;
+    color:#777;
+    font-size:10.5px;
+    font-weight:900;
+    margin-bottom:4px;
+  }
+  .advanced-key strong{
+    display:block;
+    color:#303030;
+    font-size:13px;
+    line-height:1.35;
+  }
+  .diagnosis-complete-card{
+    display:grid;
+    grid-template-columns:minmax(0,1fr) auto;
+    align-items:center;
+    gap:16px;
+    border:1px solid #ffd99b;
+    border-radius:14px;
+    background:
+      radial-gradient(circle at 96% 18%,rgba(255,209,92,.35),transparent 24%),
+      linear-gradient(135deg,#fff 0%,#fff8e8 100%);
+    padding:15px;
+    margin-bottom:12px;
+  }
+  .complete-status{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    border-radius:999px;
+    background:#303030;
+    color:#fff;
+    font-size:11px;
+    font-weight:900;
+    padding:4px 9px;
+    margin-bottom:8px;
+  }
+  .complete-status::before{
+    content:"";
+    width:7px;
+    height:7px;
+    border-radius:50%;
+    background:#91c96b;
+  }
+  .diagnosis-complete-card h4{
+    color:#303030;
+    font-size:18px;
+    line-height:1.4;
+    margin:0;
+  }
+  .diagnosis-date-line{
+    color:#555;
+    font-size:12.5px;
+    font-weight:800;
+    line-height:1.65;
+    margin-top:4px;
+  }
+  .diagnosis-date-line time{
+    color:#303030;
+  }
+  .complete-timeline{
+    display:flex;
+    gap:7px;
+    margin-top:12px;
+  }
+  .complete-timeline span{
+    display:inline-flex;
+    align-items:center;
+    gap:5px;
+    border:1px solid rgba(0,0,0,.08);
+    border-radius:999px;
+    background:rgba(255,255,255,.7);
+    color:#555;
+    font-size:11px;
+    font-weight:900;
+    padding:5px 8px;
+  }
+  .complete-timeline i{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width:17px;
+    height:17px;
+    border-radius:50%;
+    background:#19a7d8;
+    color:#fff;
+    font-size:10px;
+    font-style:normal;
+  }
+  .diagnosis-complete-card .complete-cta{
+    border:0;
+    border-radius:999px;
+    background:#ff8a00;
+    box-shadow:0 4px 0 #c76b00;
+    color:#fff;
+    cursor:pointer;
+    font-family:inherit;
+    font-size:13px;
+    font-weight:900;
+    padding:12px 18px;
+    white-space:nowrap;
+  }
+  .swot-grid{
+    gap:12px;
+  }
+  .swot-cell{
+    background:#fff;
+    border-radius:12px;
+    padding:14px;
+  }
+  .swot-cell .sw-h{
+    font-size:15px;
+  }
+  .swot-cell .sw-h small{
+    display:block;
+    margin-left:0;
+    margin-top:2px;
+    font-size:11px;
+  }
+  .swot-cell ul{
+    color:#444;
+    font-size:12.5px;
+    line-height:1.55;
+    margin-top:8px;
+  }
+  .cross-swot{
+    background:#fff;
+    border-radius:12px;
+    padding:15px;
+  }
+  .cs-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+  }
+  .cs-card{
+    border:1px solid #d8d8d8;
+    border-radius:10px;
+    padding:12px;
+    background:#fffdf6;
+  }
+  .cs-card b{
+    display:block;
+    color:#303030;
+    margin-bottom:5px;
+  }
+  .cs-card span{
+    color:#555;
+    font-size:12.5px;
+    line-height:1.55;
+  }
+  .teacher-fb{
+    background:#fff;
+    border:1px solid #d8d8d8;
+    border-radius:12px;
+    padding:14px;
+  }
+  .tf-log{
+    display:grid;
+    gap:8px;
+    margin:9px 0;
+  }
+  .tf-empty{
+    border:1px dashed #d8d8d8;
+    border-radius:10px;
+    background:#fafafa;
+    color:#777;
+    font-size:12px;
+    font-weight:800;
+    padding:10px;
+  }
+  .tf-item{
+    margin:0;
+    padding:10px;
+  }
+  .tf-meta{
+    font-size:11px;
+  }
+  .tf-text{
+    font-size:12.5px;
+    line-height:1.55;
+    margin-top:3px;
+  }
+  .tf-input{
+    min-height:82px;
+  }
+  .tf-add{
+    box-shadow:none;
+  }
+  .marketer-cta{
+    display:grid;
+    grid-template-columns:1fr auto;
+    align-items:center;
+    gap:16px;
+    border:2px solid #ffd99b;
+    border-radius:14px;
+    background:#fff8e8;
+    padding:15px;
+    margin-top:14px;
+  }
+  .marketer-cta .cta-kicker{
+    display:inline-flex;
+    border-radius:999px;
+    background:#ff8a00;
+    color:#fff;
+    font-size:11px;
+    font-weight:900;
+    padding:4px 9px;
+    margin-bottom:7px;
+  }
+  .marketer-cta h4{
+    color:#303030;
+    font-size:17px;
+    line-height:1.45;
+    margin:0;
+  }
+  .marketer-cta p{
+    color:#555;
+    font-size:12.5px;
+    line-height:1.55;
+    margin-top:5px;
+  }
+  .cta-date-line{
+    color:#555;
+    font-size:12px;
+    font-weight:800;
+    margin-top:7px;
+  }
+  .consult-mini-points{
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+    margin-top:10px;
+  }
+  .consult-mini-points b{
+    border:1px solid rgba(0,0,0,.08);
+    border-radius:999px;
+    background:#fff;
+    color:#303030;
+    font-size:11px;
+    font-weight:900;
+    padding:5px 8px;
+  }
+  .marketer-cta button{
+    border:0;
+    border-radius:999px;
+    background:#303030;
+    color:#fff;
+    cursor:pointer;
+    font-family:inherit;
+    font-size:13px;
+    font-weight:900;
+    padding:12px 18px;
+    white-space:nowrap;
+  }
+  .consult-box{
+    display:none;
+    margin-top:10px;
+  }
+  .consult-box.show{
+    display:block;
+  }
+
+  @media(max-width:720px){
+    .insight-summary,.roadmap-flow,.upsell-steps,.cs-grid,.advanced-form-grid,.marketer-cta,.diag-badges,.diagnosis-complete-card,.advanced-key-grid,.advanced-analysis-steps{grid-template-columns:1fr;}
+    .roadmap-flow::before{display:none;}
+    .radar-head{align-items:flex-start;flex-direction:column;}
+    .radar-badge-stack{justify-content:flex-start;min-width:0;}
+    .upsell-head{align-items:flex-start;flex-direction:column;}
+    .upsell-btn{width:100%;}
+    .advanced-form-head,.adv-create-row{align-items:flex-start;flex-direction:column;}
+    .adv-create-btn,.marketer-cta button,.diagnosis-complete-card .complete-cta{width:100%;}
+    .custom-task-form{grid-template-columns:1fr;}
+    .custom-task-add{width:100%;}
+  }
 </style>
 </head>
 <body>
@@ -541,22 +2699,21 @@
     <button class="pl-btn on" id="plFull" type="button" onclick="setPlan('full')">フル連携版</button>
     <button class="pl-btn" id="plMagic" type="button" onclick="setPlan('magic')">マジックリンク完結版</button>
   </div>
-  <span class="pl-note" id="planNote">受講状況・ポイント・つまずき検知まで連携　<span class="pl-price">概算 約202万円</span></span>
 </div>
 
 <div class="screen active" id="screen-welcome">
   <div class="wrap">
     <div class="welcome-hero">
       <div class="welcome-logo">M</div>
-      <h2>マーケニスタ AIコンシェルジュ<span class="kakko">（仮）</span></h2>
-      <p class="lead">いくつかの質問に答えるだけで、AIがあなたの現在地を診断し、<br>あなた専用の学習ロードマップと今日のタスクをご提案します。</p>
-      <div class="time-note">⏱ 所要時間：5〜10分</div>
+      <h2>マーケニスタ 学習ナビ<span class="kakko">（仮）</span></h2>
+      <p class="lead">いくつかの質問から現在地を整理し、目標までの学習順序と今日取り組むタスクを提示します。</p>
+      <div class="time-note">所要時間：5〜10分</div>
       <div class="welcome-points">
-        <div class="wpoint"><span class="em">📊</span>スキルを6軸で見える化</div>
-        <div class="wpoint"><span class="em">🗺️</span>目標までのロードマップ</div>
-        <div class="wpoint"><span class="em">🧭</span>毎日のタスクを自動提案</div>
+        <div class="wpoint"><span class="em">📊</span>スキルを6軸で整理</div>
+        <div class="wpoint"><span class="em">🗺️</span>目標までの学習順序</div>
+        <div class="wpoint"><span class="em">🧭</span>今日やることを提示</div>
       </div>
-      <button class="btn-start" type="button" onclick="goToStep(1)">診断をはじめる →</button>
+      <button class="btn-start" type="button" onclick="goToStep(1)">診断をはじめる</button>
     </div>
     <footer>
       <div class="note">※ 本画面は提案用のモックです。表示は全てサンプルデータです。</div>
@@ -648,7 +2805,7 @@
       <div class="q-block">
         <div class="q-title"><span class="qic">💬</span>その目標を、あなたの言葉で教えてください<span class="opt-badge">任意</span></div>
         <textarea class="free-text" rows="3" placeholder="例：会社に依存せず、自分のスキルで月10万円稼げるようになりたい"></textarea>
-        <div class="free-hint">※ 書いていただくほど、AIの診断コメントがあなた専用になります</div>
+        <div class="free-hint">※ 書いていただくほど、診断コメントの精度が上がります</div>
       </div>
     </div>
 
@@ -665,7 +2822,7 @@
           <button class="chip" type="button" onclick="pickMulti(this)">実績がない</button>
           <button class="chip" type="button" onclick="pickMulti(this)">自信がない</button>
         </div>
-        <div class="q-note">💡 選んだお悩みに合わせて、AIコメントとタスク提案の内容が変わります</div>
+        <div class="q-note">選んだお悩みに合わせて、診断コメントとタスク提案の内容が変わります</div>
       </div>
       <div class="q-block">
         <div class="q-title"><span class="qic">📝</span>いちばんの悩みを具体的に書いてみてください<span class="opt-badge">任意</span></div>
@@ -680,7 +2837,7 @@
         <div class="q-sub">6つのスキルを、いまの自信度で5段階評価してください（1＝これから ／ 5＝得意）</div>
 
         <div class="skill-row">
-          <div class="skill-name">✍️ ライティング</div>
+          <div class="skill-name">ライティング</div>
           <div class="seg-group" data-skill="writing">
             <button class="seg" type="button" onclick="pickSeg(this,1)">1</button>
             <button class="seg" type="button" onclick="pickSeg(this,2)">2</button>
@@ -692,7 +2849,7 @@
         </div>
 
         <div class="skill-row">
-          <div class="skill-name">📣 広告運用</div>
+          <div class="skill-name">広告運用</div>
           <div class="seg-group" data-skill="ads">
             <button class="seg" type="button" onclick="pickSeg(this,1)">1</button>
             <button class="seg" type="button" onclick="pickSeg(this,2)">2</button>
@@ -704,7 +2861,7 @@
         </div>
 
         <div class="skill-row">
-          <div class="skill-name">📱 SNS運用</div>
+          <div class="skill-name">SNS運用</div>
           <div class="seg-group" data-skill="sns">
             <button class="seg" type="button" onclick="pickSeg(this,1)">1</button>
             <button class="seg" type="button" onclick="pickSeg(this,2)">2</button>
@@ -716,7 +2873,7 @@
         </div>
 
         <div class="skill-row">
-          <div class="skill-name">📈 データ分析</div>
+          <div class="skill-name">データ分析</div>
           <div class="seg-group" data-skill="data">
             <button class="seg" type="button" onclick="pickSeg(this,1)">1</button>
             <button class="seg" type="button" onclick="pickSeg(this,2)">2</button>
@@ -728,7 +2885,7 @@
         </div>
 
         <div class="skill-row">
-          <div class="skill-name">🤝 営業・提案</div>
+          <div class="skill-name">営業・提案</div>
           <div class="seg-group" data-skill="sales">
             <button class="seg" type="button" onclick="pickSeg(this,1)">1</button>
             <button class="seg" type="button" onclick="pickSeg(this,2)">2</button>
@@ -740,7 +2897,7 @@
         </div>
 
         <div class="skill-row">
-          <div class="skill-name">🧩 戦略設計</div>
+          <div class="skill-name">戦略設計</div>
           <div class="seg-group" data-skill="strategy">
             <button class="seg" type="button" onclick="pickSeg(this,1)">1</button>
             <button class="seg" type="button" onclick="pickSeg(this,2)">2</button>
@@ -751,7 +2908,7 @@
           <div class="seg-caption" data-cap="strategy">未選択</div>
         </div>
 
-        <div class="q-note">📊 この回答が、診断結果のレーダーチャートになります</div>
+        <div class="q-note">この回答が、診断結果のレーダーチャートに反映されます</div>
       </div>
     </div>
 
@@ -777,14 +2934,14 @@
       <div class="q-block">
         <div class="q-title"><span class="qic">💬</span>その他、伝えておきたいことがあれば<span class="opt-badge">任意</span></div>
         <textarea class="free-text" rows="2" placeholder="例：本業が忙しい時期で学習ペースに波があります／SNSのフォロワーが1,000人います など"></textarea>
-        <div class="q-note">🎉 これで最後の質問です！「診断する」を押すとAIが分析をはじめます</div>
+        <div class="q-note">これで最後の質問です。「診断する」を押すと結果を作成します</div>
       </div>
     </div>
 
     <!-- ナビ -->
     <div class="quiz-nav">
-      <button class="btn-back" type="button" id="btnBack" onclick="goBack()">← 戻る</button>
-      <button class="btn-next" type="button" id="btnNext" onclick="goNext()">次へ →</button>
+      <button class="btn-back" type="button" id="btnBack" onclick="goBack()">戻る</button>
+      <button class="btn-next" type="button" id="btnNext" onclick="goNext()">次へ</button>
     </div>
 
     <footer>
@@ -801,12 +2958,12 @@
   <div class="wrap">
     <div class="analyzing-box">
       <div class="spinner"></div>
-      <h2>AIがあなたの回答を分析しています…</h2>
-      <p class="sub">あなた専用の診断結果とロードマップを作成中です</p>
+      <h2>回答内容を整理しています</h2>
+      <p class="sub">診断結果とロードマップを作成しています</p>
       <ul class="check-list" id="checkList">
-        <li><span class="cmark">✓</span>回答を解析しています</li>
-        <li><span class="cmark">✓</span>強み・伸びしろを特定しています</li>
-        <li><span class="cmark">✓</span>成長ロードマップを生成しています</li>
+        <li><span class="cmark">✓</span>回答内容を確認しています</li>
+        <li><span class="cmark">✓</span>強み・伸びしろを整理しています</li>
+        <li><span class="cmark">✓</span>学習順序を組み立てています</li>
         <li><span class="cmark">✓</span>今日のタスクを作成しています</li>
       </ul>
     </div>
@@ -828,7 +2985,7 @@
     <div class="brand">
       <div class="logo">M</div>
       <div>
-        <h1>マーケニスタ AIコンシェルジュ<span style="font-size:12px;font-weight:600;color:#c3b39c;">（仮）</span></h1>
+        <h1>マーケニスタ 学習ナビ<span style="font-size:12px;font-weight:600;color:#8f877b;">（仮）</span></h1>
         <p>あなた専用の学習ナビゲーション</p>
       </div>
     </div>
@@ -846,21 +3003,72 @@
 <div class="wrap">
 
   <!-- 2. 診断サマリー -->
-  <section>
+  <section class="diagnosis-result-section">
     <div class="summary-grid">
       <div class="score-box">
-        <div class="score-label">総合スキルスコア</div>
-        <div class="score-num">42<small>/100</small></div>
+        <div class="score-label">
+          <span class="score-label-basic">総合スキルスコア</span>
+          <span class="score-label-advanced">上位診断スコア</span>
+          <span class="score-label-coach">講師FB込み診断スコア</span>
+        </div>
+        <div class="score-num">
+          <span class="score-value-basic">42</span>
+          <span class="score-value-advanced">58</span>
+          <span class="score-value-coach">64</span>
+          <small>/100</small>
+        </div>
         <div class="score-bar-wrap">
           <div class="score-bar-track"><div class="score-bar-fill"></div></div>
-          <div class="score-bar-caption full-only">同期受講生の平均は 38 点です</div>
-          <div class="score-bar-caption magic-only">前回のあなたは 35 点でした（過去の自分と比較）</div>
+          <div class="score-bar-caption score-caption-basic full-only">同期受講生の平均は 38 点です</div>
+          <div class="score-bar-caption score-caption-basic magic-only">前回のあなたは 35 点でした（過去の自分と比較）</div>
+          <div class="score-bar-caption score-caption-advanced">上位診断の回答を反映し、強みと課題の解像度が上がりました</div>
+          <div class="score-bar-caption score-caption-coach">講師フィードバック込みで、相談テーマまで整理済みです</div>
         </div>
-        <div class="level-badge">🌱 現在レベル：基礎固め期</div>
+        <div class="level-badge">
+          <span class="level-basic">現在レベル：基礎固め期</span>
+          <span class="level-advanced">現在レベル：実践準備期</span>
+          <span class="level-coach">現在レベル：相談準備完了</span>
+        </div>
+        <div class="score-update-chip">
+          <span class="score-update-dot" aria-hidden="true"></span>
+          <div>
+            <b id="scoreUpdateLabel">上位診断で更新</b>
+            <small>最終診断 <time id="scoreDiagnosedAt">未実施</time></small>
+          </div>
+        </div>
+        <div class="badge-board">
+          <div class="badge-board-title">診断バッジ</div>
+          <div class="diag-badges">
+            <div class="diag-badge basic">
+              <div class="badge-medal" aria-hidden="true"></div>
+              <span class="badge-name">通常診断</span>
+              <b>簡易診断バッジ取得</b>
+            </div>
+            <div class="diag-badge adv">
+              <div class="badge-medal" aria-hidden="true"></div>
+              <span class="badge-name">上位診断</span>
+              <b class="copy-locked">空きスロット</b>
+              <b class="copy-ready">上位診断バッジ取得</b>
+            </div>
+            <div class="diag-badge coach">
+              <div class="badge-medal" aria-hidden="true"></div>
+              <span class="badge-name">講師FB込み</span>
+              <b class="copy-locked">空きスロット</b>
+              <b class="copy-ready">講師FB込みバッジ取得</b>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div class="radar-box">
-        <div class="card-title" style="margin:6px 0 2px;">📊 スキルレーダー</div>
+        <div class="radar-head">
+          <div class="card-title" style="margin:6px 0 2px;">スキルレーダー</div>
+          <div class="radar-badge-stack">
+            <span class="radar-mini-badge basic"><span class="mini-medal" aria-hidden="true"></span>通常診断バッジ</span>
+            <span class="radar-mini-badge advanced"><span class="mini-medal" aria-hidden="true"></span>上位診断バッジ</span>
+            <span class="radar-mini-badge coach"><span class="mini-medal" aria-hidden="true"></span>講師FB込み診断バッジ</span>
+          </div>
+        </div>
         <!-- inline SVG レーダーチャート（6軸） -->
         <svg viewBox="0 0 320 300" width="100%" style="max-width:340px;" role="img" aria-label="6軸スキルレーダーチャート">
           <!-- グリッド（同心六角形） -->
@@ -920,181 +3128,343 @@
     </div>
   </section>
 
-  <!-- 3. AI診断コメント -->
-  <section>
+  <!-- 3. 診断コメント -->
+  <section class="diagnosis-result-section">
     <div class="card">
-      <div class="card-title">あなたへの診断コメント</div>
+      <div class="card-title">あなたへの診断コメント<span class="result-chip advanced-only">上位診断結果</span></div>
+      <div class="insight-summary">
+        <div class="insight-card">
+          <span class="insight-label">強み</span>
+          <b id="topInsightStrength">文章化できる</b>
+        </div>
+        <div class="insight-card">
+          <span class="insight-label">優先課題</span>
+          <b id="topInsightGrowth">数字を見る力</b>
+        </div>
+        <div class="insight-card">
+          <span class="insight-label">次の一手</span>
+          <b id="topInsightNext">広告基礎を一巡</b>
+        </div>
+      </div>
       <div class="review-grid">
         <div class="review-item good">
           <h4>あなたの強み</h4>
-          <p>ライティングの自己評価が高く、実務でも文章を書いた経験があります。この力はマーケの土台になるので、初案件（コピー・記事作成系）に最も近いスキルです。営業・提案の意欲も高く、人に価値を届ける適性が見えます。</p>
+          <p class="review-lead" id="topStrengthLead">言葉で整理して伝える力があります。マーケティングの入口としてかなり相性が良いタイプです。</p>
+          <ul class="review-points" id="topStrengthPoints">
+            <li>商品やサービスの良さを、読み手向けに整理できる</li>
+            <li>コピー・記事・提案文など、文章で価値を出しやすい</li>
+            <li>副業月5万円の目標が具体的で、案件化に接続しやすい</li>
+          </ul>
+          <div class="review-next" id="topStrengthNext">まずは広告を1つ選び、「誰に何を伝えているか」を3行で言語化。</div>
         </div>
         <div class="review-item grow">
           <h4>これからの伸びしろ</h4>
-          <p>広告運用とデータ分析が現在の伸びしろです。ここは「数字を見て改善する」マーケの中核なので、動画インプット＋手を動かすアウトプットで一気に伸びます。まずは広告運用の基礎から、小さく実践していきましょう。</p>
+          <p class="review-lead" id="topGrowthLead">広告運用と数字の読み方を足すと、文章力が「提案できる力」に変わります。</p>
+          <ul class="review-points" id="topGrowthPoints">
+            <li>CTR・CVR・CPAを、暗記ではなく意味で見る</li>
+            <li>毎週1本、広告やLPの改善メモを残す</li>
+            <li>運用経験より先に、提案材料を作る</li>
+          </ul>
+          <div class="review-next" id="topGrowthNext">次の1ヶ月は「学ぶ → 1本メモを書く」を固定化。</div>
         </div>
       </div>
     </div>
   </section>
 
   <!-- 3.5 あなたにおすすめの学習コース（マーケニスタ既存7コースとの連動） -->
-  <section>
+  <section class="diagnosis-result-section">
     <div class="card">
       <div class="card-title">
         あなたにおすすめの学習コース
-        <span class="ai-badge">✨ 7コースからAIが自動判定</span>
+        <span class="result-chip advanced-only">上位診断結果</span>
+        <span class="ai-badge">7コースから判定</span>
       </div>
       <div class="course-reco">
-        <div class="course-badge">🏅 おすすめコース</div>
+        <div class="course-badge">おすすめコース</div>
         <div class="course-name">広告運用やWebマーケティングスキルを<br class="course-br">もっと上げたい</div>
-        <p class="course-desc">診断結果から、7つの学習コースのうちこのコースが最適と判定しました。<b>ステップ02『Web広告の基礎〜運用まで理解を深めよう』</b>から始めるのがおすすめです。</p>
+        <p class="course-desc"><b>ステップ02『Web広告の基礎』</b>から始めて、分析メモと提案文に落とし込みます。</p>
       </div>
       <div class="course-note">※ マーケニスタの既存ロードマップと連動する想定です</div>
     </div>
   </section>
 
-  <!-- 3.5 上位診断（SWOT／クロスSWOT） -->
-  <section>
-    <div class="card">
-      <div class="ldx-head">
+  <!-- 3.6 上位診断アップセル（SWOT／クロスSWOT） -->
+  <section id="advancedDeepDive">
+    <div class="card advanced-upsell-card advanced-detail-card">
+      <div class="upsell-head">
         <div>
-          <div class="card-title" style="margin:0;">上位診断</div>
-          <div class="ldx-sub">SWOT・クロスSWOTと、講師フィードバックが蓄積される"生きたカルテ"</div>
+          <span class="upsell-kicker">もっと深く分析したい方へ</span>
+          <h3>上位診断で「生きたカルテ」を作る</h3>
+          <p>SWOTと講師FBをまとめて、強みの使い方・つまずきの原因・相談テーマまで見える化します。</p>
         </div>
-        <button class="ldx-toggle" type="button" onclick="toggleLdx()"><span id="ldxLabel">上位診断はこちら</span><span id="ldxArrow">＋</span></button>
+        <button class="upsell-btn ldx-toggle" type="button" onclick="toggleLdx()"><span id="ldxLabel">上位診断を試す</span><span id="ldxArrow">＋</span></button>
+      </div>
+      <div class="upsell-steps">
+        <div class="upsell-step"><b>1. かんたん設問</b><span>専門用語を知らなくても、得意・不安・目標を自由に書くだけで進められます。</span></div>
+        <div class="upsell-step"><b>2. SWOT自動整理</b><span>回答内容を、強み・弱み・機会・注意点と、今の打ち手に変換します。</span></div>
+        <div class="upsell-step"><b>3. FBにつなげる</b><span>講師コメントや現役マーケターへの相談内容まで、カルテにまとめます。</span></div>
       </div>
       <div class="ldx-body" id="ldxBody" style="display:none;">
-      <div class="swot-grid">
-        <div class="swot-cell s"><div class="sw-h">強み <small>Strength</small></div><ul><li>学ぶ意欲が高く時間も確保できる</li><li>目標が明確（副業で月5万）</li></ul></div>
-        <div class="swot-cell w"><div class="sw-h">弱み <small>Weakness</small></div><ul><li>広告運用・データ分析の知識が浅い</li><li>実案件の経験・実績がまだ無い</li></ul></div>
-        <div class="swot-cell o"><div class="sw-h">機会 <small>Opportunity</small></div><ul><li>マーケ人材の需要が拡大中</li><li>副業・フリーランス市場が伸びている</li></ul></div>
-        <div class="swot-cell t"><div class="sw-h">脅威 <small>Threat</small></div><ul><li>独学は挫折しやすい</li><li>スキルなしでは価格競争に巻き込まれる</li></ul></div>
-      </div>
-      <div class="cross-swot">
-        <div class="cs-title">🎯 クロスSWOT（今の打ち手）</div>
-        <div class="cs-row"><b>強み×機会</b>：高い意欲を、伸びている広告運用の需要にそのまま乗せる。まず基礎講座を短期集中で。</div>
-        <div class="cs-row"><b>弱み×脅威</b>：実績ゼロのまま価格競争に入らないよう、最初の3ヶ月で「見せられる実績」を1件つくる。</div>
-      </div>
-      <div class="teacher-fb">
-        <div class="tf-title">講師フィードバック<span class="tf-hint"> ・ 担当講師が記入し、ここに蓄積されていきます</span></div>
-        <div class="tf-log" id="tfLog">
-          <div class="tf-item"><div class="tf-meta">佐藤 講師　6/20</div><div class="tf-text">ライティングの基礎はできています。次は広告運用の数値を1つ読めるようになりましょう。</div></div>
-          <div class="tf-item"><div class="tf-meta">佐藤 講師　7/4</div><div class="tf-text">提案文の構成が良くなりました。CTAをもう一歩具体的にすると、返信率が上がります。</div></div>
+        <div class="advanced-form" id="advancedForm">
+          <div class="advanced-form-head">
+            <div>
+              <h4>まずは4つの設問に答えてください</h4>
+              <p>きれいに書けなくても大丈夫です。思いつくまま入力すると、SWOT分析とクロスSWOTのたたき台が作られます。</p>
+            </div>
+            <span class="form-time">目安 3分</span>
+          </div>
+          <div class="advanced-form-grid">
+            <div class="adv-q-card">
+              <div class="adv-q-top"><div class="adv-q-num">Q1</div><h5>今できていること・得意だと思うことは？</h5></div>
+              <div class="adv-choice-row">
+                <button class="adv-choice" type="button" onclick="toggleAdvChoice(this)">文章を書く</button>
+                <button class="adv-choice" type="button" onclick="toggleAdvChoice(this)">SNS投稿</button>
+                <button class="adv-choice" type="button" onclick="toggleAdvChoice(this)">人に説明する</button>
+              </div>
+              <textarea class="adv-textarea" id="advStrengthText" placeholder="例：文章を書くのは苦ではない。仕事で資料をまとめることが多い。"></textarea>
+            </div>
+            <div class="adv-q-card">
+              <div class="adv-q-top"><div class="adv-q-num">Q2</div><h5>今つまずいていること・不安なことは？</h5></div>
+              <div class="adv-choice-row">
+                <button class="adv-choice" type="button" onclick="toggleAdvChoice(this)">数字が苦手</button>
+                <button class="adv-choice" type="button" onclick="toggleAdvChoice(this)">実績がない</button>
+                <button class="adv-choice" type="button" onclick="toggleAdvChoice(this)">何から始めるか迷う</button>
+              </div>
+              <textarea class="adv-textarea" id="advWeakText" placeholder="例：広告の数字を見るのが苦手。案件に応募する実績がまだない。"></textarea>
+            </div>
+            <div class="adv-q-card">
+              <div class="adv-q-top"><div class="adv-q-num">Q3</div><h5>3ヶ月後にどうなっていたいですか？</h5></div>
+              <div class="adv-choice-row">
+                <button class="adv-choice" type="button" onclick="toggleAdvChoice(this)">副業案件</button>
+                <button class="adv-choice" type="button" onclick="toggleAdvChoice(this)">提案文作成</button>
+                <button class="adv-choice" type="button" onclick="toggleAdvChoice(this)">広告分析</button>
+              </div>
+              <textarea class="adv-textarea" id="advGoalText" placeholder="例：広告改善の提案文を作って、最初の案件応募まで進みたい。"></textarea>
+            </div>
+            <div class="adv-q-card">
+              <div class="adv-q-top"><div class="adv-q-num">Q4</div><h5>講師から言われたこと・相談したいことは？</h5></div>
+              <div class="adv-choice-row">
+                <button class="adv-choice" type="button" onclick="toggleAdvChoice(this)">講師FBあり</button>
+                <button class="adv-choice" type="button" onclick="toggleAdvChoice(this)">相談したい</button>
+                <button class="adv-choice" type="button" onclick="toggleAdvChoice(this)">プロに見てほしい</button>
+              </div>
+              <textarea class="adv-textarea" id="advFbText" placeholder="例：提案文の書き方が合っているか見てほしい。"></textarea>
+            </div>
+          </div>
+          <div class="adv-create-row">
+            <span>回答内容は、この下の「生きたカルテ」に反映されます。あとから講師FBを追加することもできます。</span>
+            <button class="adv-create-btn" type="button" onclick="completeAdvancedDiagnosis()">SWOT分析を作成</button>
+          </div>
         </div>
-        <textarea class="tf-input" id="tfInput" placeholder="この受講生へのフィードバックを記入…"></textarea>
-        <button class="tf-add" type="button" onclick="addFb()">フィードバックを追加</button>
-      </div>
-      <div class="swot-note full-only">担当が変わっても引き継げる"生きたカルテ"になります（受講状況との連携が前提）。</div>
-      <div class="swot-note magic-only">上位診断（SWOT／クロスSWOT）は完結版でも利用できます。講師フィードバックの自動蓄積・担当引き継ぎはフル連携版の機能です。</div>
+
+        <div class="advanced-analyzing" id="advancedAnalyzing" style="display:none;">
+          <div class="advanced-analyzing-top">
+            <div class="mini-spinner" aria-hidden="true"></div>
+            <div>
+              <h4>上位診断を分析しています</h4>
+              <p>回答内容から、SWOT・打ち手・相談テーマを整理しています。</p>
+            </div>
+          </div>
+          <ul class="advanced-analysis-steps" id="advancedAnalysisSteps">
+            <li>回答を要約</li>
+            <li>SWOTに変換</li>
+            <li>FB導線を作成</li>
+          </ul>
+        </div>
+
+        <div class="advanced-generated" id="advancedResults" style="display:none;">
+          <div class="advanced-summary-mini">
+            <span>上位診断サマリ</span>
+            <b>文章化力を、広告改善提案に転用できるタイプ</b>
+            <div class="advanced-key-grid">
+              <div class="advanced-key"><small>強み</small><strong>言語化できる</strong></div>
+              <div class="advanced-key"><small>課題</small><strong>数字の読み方</strong></div>
+              <div class="advanced-key"><small>次の一手</small><strong>分析メモを1本作る</strong></div>
+            </div>
+          </div>
+          <div class="diagnosis-complete-card">
+            <div>
+              <span class="complete-status" id="completeStatusLabel">上位診断が完了しました</span>
+              <h4>カルテを更新しました</h4>
+              <div class="diagnosis-date-line">診断日 <time id="advancedDiagnosedAt">未実施</time> ・ SWOT / クロスSWOTを反映</div>
+              <div class="complete-timeline">
+                <span><i>1</i>回答整理</span>
+                <span><i>2</i>診断更新</span>
+                <span><i>3</i>FB依頼へ</span>
+              </div>
+            </div>
+            <button class="complete-cta" type="button" onclick="openConsultBox()">現役コンサルにFBを依頼</button>
+          </div>
+          <div class="swot-grid">
+            <div class="swot-cell s"><div class="sw-h">強み <small>使える武器</small></div><ul><li id="swotStrengthPrimary">文章にまとめる力がある</li><li>目標が具体的</li></ul></div>
+            <div class="swot-cell w"><div class="sw-h">弱み <small>つまずき</small></div><ul><li id="swotWeakPrimary">広告運用・データ分析の経験が少ない</li><li>見せられる実績が少ない</li></ul></div>
+            <div class="swot-cell o"><div class="sw-h">機会 <small>追い風</small></div><ul><li id="swotGoalPrimary">広告・SNS運用の需要がある</li><li>小さな改善提案でも案件化しやすい</li></ul></div>
+            <div class="swot-cell t"><div class="sw-h">注意点 <small>リスク</small></div><ul><li>学習だけで終わる</li><li>実績不足のまま応募で迷う</li></ul></div>
+          </div>
+          <div class="cross-swot">
+            <div class="cs-title">クロスSWOT（今の打ち手）</div>
+            <div class="cs-grid">
+              <div class="cs-card"><b>強み × 機会</b><span>改善案・提案文を1本作る</span></div>
+              <div class="cs-card"><b>弱み × 注意点</b><span>分析メモを実績として残す</span></div>
+            </div>
+          </div>
+          <div class="teacher-fb">
+            <div class="tf-title">講師からのフィードバックがある方はこちら<span class="tf-hint"> ・ 入れるほど相談テーマが明確になります</span></div>
+            <div class="tf-log" id="tfLog">
+              <div class="tf-empty" id="tfEmpty">講師FBを貼ると、相談メモに反映されます。</div>
+            </div>
+            <textarea class="tf-input" id="tfInput" placeholder="例：講師に言われた改善点、相談したいこと、不安なことを入力"></textarea>
+            <button class="tf-add" type="button" onclick="addFb()">カルテに追加</button>
+          </div>
+          <div class="marketer-cta">
+            <div>
+              <span class="cta-kicker">次のアクション</span>
+              <h4>このカルテを現役コンサルに見てもらう</h4>
+              <p>診断直後のメモを使って、案件化・提案文・学習順序を相談できます。</p>
+              <div class="cta-date-line">診断日 <time id="consultDiagnosedAt">未実施</time> ・ <span id="consultStatusText">FB依頼メモを作成できます</span></div>
+              <div class="consult-mini-points"><b>提案文レビュー</b><b>案件化相談</b><b>学習順序の調整</b></div>
+            </div>
+            <button type="button" onclick="openConsultBox()">FB依頼メモを書く</button>
+          </div>
+          <div class="consult-box" id="consultBox">
+            <textarea class="tf-input" id="consultInput" placeholder="例：このSWOTで合っているか見てほしい。案件応募前に提案文も見てほしい。"></textarea>
+            <button class="tf-add" type="button">個別相談に進む</button>
+          </div>
+          <div class="swot-note full-only">この内容を個別相談に持ち込むと、学習相談だけでなく案件獲得・商品提案まで話を進めやすくなります。</div>
+          <div class="swot-note magic-only">上位診断は完結版でも利用できます。講師FBの自動蓄積・担当引き継ぎはフル連携版の機能です。</div>
+        </div>
       </div><!-- /ldx-body -->
     </div>
   </section>
 
   <!-- 4. ロードマップ -->
   <section>
-    <div class="card">
-      <div class="card-title">あなたの成長ロードマップ</div>
-      <div class="roadmap">
-        <div class="rm-step now">
-          <div class="rm-dot">📍</div>
-          <div>
-            <span class="now-flag">現在地</span>
-            <div class="rm-when">NOW</div>
-            <div class="rm-title">基礎固め期</div>
-            <ul class="rm-todo">
-              <li>診断結果を確認</li>
-              <li>毎日の学習習慣化</li>
-            </ul>
-          </div>
+    <div class="card roadmap-card">
+      <div class="roadmap-head">
+        <div>
+          <div class="card-title">あなたの成長ロードマップ<span class="result-chip advanced-only">上位診断結果</span></div>
+          <p class="roadmap-copy">文章化の強みを活かしながら、広告運用と数字を見る力を順番に伸ばします。</p>
         </div>
-        <div class="rm-step">
-          <div class="rm-dot">1</div>
-          <div>
-            <div class="rm-when">1ヶ月後</div>
-            <div class="rm-title">基礎インプット完了</div>
-            <ul class="rm-todo">
-              <li>基礎講座を修了</li>
-              <li>広告運用の基本理解</li>
-            </ul>
-          </div>
+        <div class="roadmap-meta">
+          <span>期間 6ヶ月</span>
+          <span>重点 広告運用 / 分析</span>
+          <span>成果物 3点</span>
         </div>
-        <div class="rm-step">
-          <div class="rm-dot">3</div>
-          <div>
-            <div class="rm-when">3ヶ月後</div>
-            <div class="rm-title">初案件に応募</div>
-            <ul class="rm-todo">
-              <li>提案文を5本作成</li>
-              <li>クラウドソーシング登録</li>
-            </ul>
+      </div>
+      <div class="roadmap-flow">
+        <div class="road-phase p0">
+          <div class="road-main">
+            <div class="road-badge">0</div>
+            <div>
+              <span class="road-time">現在〜2週</span>
+              <div class="road-title">現在地を固定</div>
+            </div>
           </div>
+          <div class="road-meter"><span></span></div>
+          <div class="road-kpi">学習ログ 週3回</div>
+          <div class="road-actions">
+            <span>弱点確認</span>
+            <span>学習枠を固定</span>
+            <span>広告基礎スタート</span>
+          </div>
+          <div class="road-output"><span>成果物</span><b>学習ログ</b></div>
         </div>
-        <div class="rm-step">
-          <div class="rm-dot">🏆</div>
-          <div>
-            <div class="rm-when">6ヶ月後</div>
-            <div class="rm-title">副業月5万円</div>
-            <ul class="rm-todo">
-              <li>継続案件を1件獲得</li>
-              <li>実績をポートフォリオ化</li>
-            </ul>
+        <div class="road-phase p1">
+          <div class="road-main">
+            <div class="road-badge">1</div>
+            <div>
+              <span class="road-time">1ヶ月後</span>
+              <div class="road-title">広告の基礎を一巡</div>
+            </div>
           </div>
+          <div class="road-meter"><span></span></div>
+          <div class="road-kpi">分析メモ 1本</div>
+          <div class="road-actions">
+            <span>基礎講座修了</span>
+            <span>CTR / CVR理解</span>
+            <span>広告分解</span>
+          </div>
+          <div class="road-output"><span>成果物</span><b>広告分析メモ</b></div>
+        </div>
+        <div class="road-phase p3">
+          <div class="road-main">
+            <div class="road-badge">3</div>
+            <div>
+              <span class="road-time">3ヶ月後</span>
+              <div class="road-title">見せられる実績化</div>
+            </div>
+          </div>
+          <div class="road-meter"><span></span></div>
+          <div class="road-kpi">提案文 5本</div>
+          <div class="road-actions">
+            <span>改善案作成</span>
+            <span>プロフィール整備</span>
+            <span>応募準備</span>
+          </div>
+          <div class="road-output"><span>成果物</span><b>改善提案セット</b></div>
+        </div>
+        <div class="road-phase p6">
+          <div class="road-main">
+            <div class="road-badge">6</div>
+            <div>
+              <span class="road-time">6ヶ月後</span>
+              <div class="road-title">案件獲得と継続化</div>
+            </div>
+          </div>
+          <div class="road-meter"><span></span></div>
+          <div class="road-kpi">月5万円 / 継続1件</div>
+          <div class="road-actions">
+            <span>月10件応募</span>
+            <span>実績ページ化</span>
+            <span>継続提案</span>
+          </div>
+          <div class="road-output"><span>成果物</span><b>案件獲得導線</b></div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- 5. デイリーナビ（見せ場） -->
+  <!-- 5. ジャストタスク（見せ場） -->
   <section>
     <div class="card daily-card">
-      <div class="card-title">今日のデイリーナビ</div>
-      <div class="time-q">⏰ 今日は何時間、学習に使えますか？</div>
+      <div class="card-title">今日のジャストタスク</div>
+      <div class="time-q">今日は何時間、学習に使えますか？</div>
       <div class="time-btns" id="timeBtns">
-        <button class="time-btn" type="button" onclick="selectTime(this)">30分<small>コツコツ</small></button>
-        <button class="time-btn" type="button" onclick="selectTime(this)">1時間<small>標準</small></button>
-        <button class="time-btn active" type="button" onclick="selectTime(this)">2時間<small>しっかり</small></button>
-        <button class="time-btn" type="button" onclick="selectTime(this)">3時間〜<small>集中</small></button>
+        <button class="time-btn" type="button" onclick="selectTime(this,'30')">30分<small>コツコツ</small></button>
+        <button class="time-btn" type="button" onclick="selectTime(this,'60')">1時間<small>標準</small></button>
+        <button class="time-btn active" type="button" onclick="selectTime(this,'120')">2時間<small>しっかり</small></button>
+        <button class="time-btn" type="button" onclick="selectTime(this,'180')">3時間〜<small>集中</small></button>
       </div>
 
       <div class="task-plan-head">
-        <h4>今日のおすすめタスク（合計 約2時間）</h4>
-        <div class="pt-counter">獲得ポイント <b id="ptNow">0</b> / 50 pt</div>
+        <div>
+          <h4 id="justTaskTitle">今日のジャストタスク（合計 約2時間）</h4>
+          <p id="justTaskNote">広告基礎のインプットと、提案文づくりをセットで進めます。</p>
+        </div>
+        <div class="pt-counter">獲得ポイント <b id="ptNow">0</b> / <span id="ptMax">50</span> pt</div>
       </div>
 
-      <div class="task" onclick="toggleTask(this,10)">
-        <div class="chk">✓</div>
-        <div class="task-body">
-          <div class="task-title">動画『広告運用 基礎 第3章』を見る</div>
-          <div class="task-meta">
-            <span class="tag time">⏱ 40分</span>
-            <span class="tag pt">+10 pt</span>
-            <span class="tag type-in">📥 インプット</span>
-          </div>
+      <div class="task-list" id="justTaskList"></div>
+      <div class="custom-task-box">
+        <div class="custom-task-title">自分のタスクを追加</div>
+        <div class="custom-task-form">
+          <input id="customTaskTitle" type="text" placeholder="例：広告改善メモを1本書く">
+          <select id="customTaskTime" aria-label="所要時間">
+            <option value="10">10分</option>
+            <option value="15">15分</option>
+            <option value="30" selected>30分</option>
+            <option value="45">45分</option>
+            <option value="60">60分</option>
+          </select>
+          <select id="customTaskType" aria-label="タスク種別">
+            <option value="アウトプット" selected>アウトプット</option>
+            <option value="インプット">インプット</option>
+            <option value="分析">分析</option>
+            <option value="応募準備">応募準備</option>
+          </select>
+          <button class="custom-task-add" type="button" onclick="addCustomJustTask()">追加</button>
         </div>
-      </div>
-
-      <div class="task" onclick="toggleTask(this,15)">
-        <div class="chk">✓</div>
-        <div class="task-body">
-          <div class="task-title">学んだ内容を1投稿でアウトプットする</div>
-          <div class="task-meta">
-            <span class="tag time">⏱ 20分</span>
-            <span class="tag pt">+15 pt</span>
-            <span class="tag type-out">📤 アウトプット</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="task" onclick="toggleTask(this,25)">
-        <div class="chk">✓</div>
-        <div class="task-body">
-          <div class="task-title">サンプル案件の提案文を1本書く</div>
-          <div class="task-meta">
-            <span class="tag time">⏱ 60分</span>
-            <span class="tag pt">+25 pt</span>
-            <span class="tag type-out">📤 アウトプット</span>
-          </div>
-        </div>
+        <div class="custom-task-hint">自分で追加したタスクはポイント対象外です。今日やることの管理用としてリストに残ります。</div>
       </div>
     </div>
   </section>
@@ -1181,10 +3551,10 @@
     document.getElementById('btnBack').disabled = (currentStep===1);
     var next = document.getElementById('btnNext');
     if(currentStep===TOTAL_STEPS){
-      next.textContent = '🔍 診断する';
+      next.textContent = '診断する';
       next.classList.add('finish');
     }else{
-      next.textContent = '次へ →';
+      next.textContent = '次へ';
       next.classList.remove('finish');
     }
   }
@@ -1256,10 +3626,141 @@
   /* ==========================================================
      結果ダッシュボード（v1と同じ挙動）
   ========================================================== */
+  var ptTotal = 0;
+  var currentJustTaskPlan = '120';
+  var customJustTasks = [];
+  var JUST_TASK_PLANS = {
+    "30": {
+      title:"今日のジャストタスク（合計 約30分）",
+      note:"忙しい日は、見る・書くを1つずつ。学習の火を消さないメニューです。",
+      max:20,
+      tasks:[
+        {title:"動画『広告運用 基礎 第3章』を倍速で見る", time:"15分", pt:8, type:"インプット", kind:"in"},
+        {title:"気づきを3行だけメモする", time:"10分", pt:7, type:"アウトプット", kind:"out"},
+        {title:"明日見る広告を1つ保存する", time:"5分", pt:5, type:"準備", kind:"in"}
+      ]
+    },
+    "60": {
+      title:"今日のジャストタスク（合計 約1時間）",
+      note:"基礎理解と小さなアウトプットをセットにして、前進感を作ります。",
+      max:35,
+      tasks:[
+        {title:"動画『広告運用 基礎 第3章』を見る", time:"30分", pt:10, type:"インプット", kind:"in"},
+        {title:"広告を1つ選び、良い点を3つ書く", time:"15分", pt:10, type:"分析", kind:"out"},
+        {title:"学んだ内容を1投稿でアウトプットする", time:"15分", pt:15, type:"アウトプット", kind:"out"}
+      ]
+    },
+    "120": {
+      title:"今日のジャストタスク（合計 約2時間）",
+      note:"広告基礎のインプットと、提案文づくりをセットで進めます。",
+      max:50,
+      tasks:[
+        {title:"動画『広告運用 基礎 第3章』を見る", time:"40分", pt:10, type:"インプット", kind:"in"},
+        {title:"学んだ内容を1投稿でアウトプットする", time:"20分", pt:15, type:"アウトプット", kind:"out"},
+        {title:"サンプル案件の提案文を1本書く", time:"60分", pt:25, type:"アウトプット", kind:"out"}
+      ]
+    },
+    "180": {
+      title:"今日のジャストタスク（合計 約3時間）",
+      note:"案件化に近づける日。分析メモから提案文まで一気に作ります。",
+      max:75,
+      tasks:[
+        {title:"広告運用の基礎動画を2本見る", time:"60分", pt:15, type:"インプット", kind:"in"},
+        {title:"LPと広告を1セット分解して分析メモを書く", time:"45分", pt:20, type:"分析", kind:"out"},
+        {title:"サンプル案件の提案文を1本書く", time:"50分", pt:25, type:"アウトプット", kind:"out"},
+        {title:"プロフィール文を案件向けに1段落だけ整える", time:"25分", pt:15, type:"応募準備", kind:"out"}
+      ]
+    }
+  };
+
+  function escapeHtml(value){
+    return String(value)
+      .replace(/&/g,'&amp;')
+      .replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;')
+      .replace(/'/g,'&#039;');
+  }
+
+  function getTaskKind(type){
+    return type === 'インプット' ? 'in' : 'out';
+  }
+
+  function renderJustTasks(planKey){
+    currentJustTaskPlan = planKey || currentJustTaskPlan || '120';
+    var plan = JUST_TASK_PLANS[planKey] || JUST_TASK_PLANS["120"];
+    var list = document.getElementById('justTaskList');
+    if(!list) return;
+    var tasks = plan.tasks.map(function(task){
+      return Object.assign({custom:false}, task);
+    }).concat(customJustTasks.map(function(task, index){
+      return Object.assign({custom:true, customIndex:index}, task);
+    }));
+    ptTotal = 0;
+    document.getElementById('ptNow').textContent = '0';
+    document.getElementById('ptMax').textContent = plan.max;
+    document.getElementById('justTaskTitle').textContent =
+      customJustTasks.length ? plan.title + ' + 追加タスク' : plan.title;
+    document.getElementById('justTaskNote').textContent =
+      customJustTasks.length ? plan.note + ' 追加タスク ' + customJustTasks.length + '件を含みます。' : plan.note;
+    list.innerHTML = tasks.map(function(task){
+      var typeClass = task.kind === 'in' ? 'type-in' : 'type-out';
+      var removeBtn = task.custom
+        ? '<button class="task-remove" type="button" onclick="removeCustomJustTask('+task.customIndex+',event)">削除</button>'
+        : '';
+      var customTag = task.custom ? '<span class="tag type-out">追加</span>' : '';
+      var pointTag = task.custom
+        ? '<span class="tag no-pt">ポイント対象外</span>'
+        : '<span class="tag pt">+'+task.pt+' pt</span>';
+      return '<div class="task '+(task.custom ? 'user-task' : '')+'" onclick="toggleTask(this,'+(task.custom ? 0 : task.pt)+')">' +
+        '<div class="chk">✓</div>' +
+        '<div class="task-body">' +
+          '<div class="task-title">'+escapeHtml(task.title)+'</div>' +
+          '<div class="task-meta">' +
+            '<span class="tag time">'+escapeHtml(task.time)+'</span>' +
+            pointTag +
+            '<span class="tag '+typeClass+'">'+escapeHtml(task.type)+'</span>' +
+            customTag +
+          '</div>' +
+        '</div>' +
+        removeBtn +
+      '</div>';
+    }).join('');
+  }
+
   // 時間ボタンの選択切り替え
-  function selectTime(btn){
+  function selectTime(btn, planKey){
     document.querySelectorAll('#timeBtns .time-btn').forEach(function(b){b.classList.remove('active');});
     btn.classList.add('active');
+    renderJustTasks(planKey || '120');
+  }
+
+  function addCustomJustTask(){
+    var titleEl = document.getElementById('customTaskTitle');
+    var timeEl = document.getElementById('customTaskTime');
+    var typeEl = document.getElementById('customTaskType');
+    var title = titleEl.value.trim();
+    if(!title){
+      titleEl.focus();
+      return;
+    }
+    var minutes = parseInt(timeEl.value, 10) || 30;
+    var type = typeEl.value || 'アウトプット';
+    customJustTasks.push({
+      title:title,
+      time:minutes + '分',
+      pt:0,
+      type:type,
+      kind:getTaskKind(type)
+    });
+    titleEl.value = '';
+    renderJustTasks(currentJustTaskPlan);
+  }
+
+  function removeCustomJustTask(index, event){
+    if(event){ event.stopPropagation(); }
+    customJustTasks.splice(index, 1);
+    renderJustTasks(currentJustTaskPlan);
   }
 
   /* ==========================================================
@@ -1271,19 +3772,213 @@
     document.body.classList.toggle('plan-magic', magic);
     document.getElementById('plFull').classList.toggle('on', !magic);
     document.getElementById('plMagic').classList.toggle('on', magic);
-    document.getElementById('planNote').innerHTML = magic
-      ? 'マーケニスタと繋がず、届いたリンクから独立して動作　<span class="pl-price">概算 約169万円</span>'
-      : '受講状況・ポイント・つまずき検知まで連携　<span class="pl-price">概算 約202万円</span>';
   }
 
-  /* 上位診断の開閉 */
+  /* 上位診断の設問表示・結果生成 */
+  function runAdvancedDiagnosis(){
+    var body = document.getElementById('ldxBody');
+    body.style.display = 'block';
+    document.getElementById('advancedForm').style.display = 'block';
+    document.getElementById('advancedAnalyzing').style.display = 'none';
+    document.getElementById('advancedResults').style.display = 'none';
+    document.querySelector('.ldx-toggle').classList.add('open');
+    document.getElementById('ldxLabel').textContent = '設問を閉じる';
+    document.getElementById('ldxArrow').textContent = '−';
+
+    var target = document.getElementById('advancedDeepDive');
+    if(target){ target.scrollIntoView({behavior:'smooth', block:'start'}); }
+  }
+
   function toggleLdx(){
+    var completed = document.body.classList.contains('advanced-ready');
     var body = document.getElementById('ldxBody');
     var open = body.style.display !== 'none';
-    body.style.display = open ? 'none' : 'block';
-    document.querySelector('.ldx-toggle').classList.toggle('open', !open);
-    document.getElementById('ldxLabel').textContent = open ? '上位診断はこちら' : '閉じる';
-    document.getElementById('ldxArrow').textContent = open ? '＋' : '−';
+
+    if(!open && !completed){
+      runAdvancedDiagnosis();
+      return;
+    }
+
+    if(open){
+      body.style.display = 'none';
+      document.querySelector('.ldx-toggle').classList.remove('open');
+      document.getElementById('ldxLabel').textContent = completed ? '内訳を表示' : '上位診断を試す';
+      document.getElementById('ldxArrow').textContent = '＋';
+      return;
+    }
+
+    body.style.display = 'block';
+    document.getElementById('advancedForm').style.display = completed ? 'none' : 'block';
+    document.getElementById('advancedAnalyzing').style.display = 'none';
+    document.getElementById('advancedResults').style.display = completed ? 'block' : 'none';
+    document.querySelector('.ldx-toggle').classList.add('open');
+    document.getElementById('ldxLabel').textContent = completed ? '内訳を閉じる' : '設問を閉じる';
+    document.getElementById('ldxArrow').textContent = '−';
+  }
+
+  function toggleAdvChoice(btn){
+    btn.classList.toggle('on');
+  }
+
+  function getShortAnswer(id, fallback){
+    var el = document.getElementById(id);
+    var v = el ? el.value.trim() : '';
+    if(!v) return fallback;
+    return v.length > 48 ? v.slice(0,48) + '...' : v;
+  }
+
+  function getCompactAnswer(id, fallback){
+    var el = document.getElementById(id);
+    var v = el ? el.value.trim() : '';
+    if(!v) return fallback;
+    return v.length > 15 ? v.slice(0,15) + '...' : v;
+  }
+
+  function setText(id, text){
+    var el = document.getElementById(id);
+    if(el){ el.textContent = text; }
+  }
+
+  function setList(id, items){
+    var list = document.getElementById(id);
+    if(!list) return;
+    list.innerHTML = '';
+    items.forEach(function(text){
+      var li = document.createElement('li');
+      li.textContent = text;
+      list.appendChild(li);
+    });
+  }
+
+  function updateTopDiagnosisFromAdvanced(){
+    var strength = getShortAnswer('advStrengthText', '文章にまとめる力がある');
+    var weak = getShortAnswer('advWeakText', '広告の数字を見るのがまだ苦手');
+    var goal = getShortAnswer('advGoalText', '広告改善メモを作りたい');
+    var strengthCompact = getCompactAnswer('advStrengthText', '言語化できる');
+    var weakCompact = getCompactAnswer('advWeakText', '数字の読み方');
+    var goalCompact = getCompactAnswer('advGoalText', '分析メモを作る');
+
+    setText('topInsightStrength', strengthCompact);
+    setText('topInsightGrowth', weakCompact);
+    setText('topInsightNext', goalCompact);
+
+    setText('topStrengthLead', '上位診断では「'+strength+'」が強みとして出ています。ここを広告改善案や提案文へつなげます。');
+    setList('topStrengthPoints', [
+      '自分の言葉で状況を整理できる',
+      '読み手に伝わる形へ変換しやすい',
+      '提案文・改善メモとして実績化しやすい'
+    ]);
+    setText('topStrengthNext', '次は「'+goalCompact+'」を1つ作り、見せられる材料にします。');
+
+    setText('topGrowthLead', '伸びしろは「'+weak+'」。ここを補うと、強みがそのまま相談・案件化に使える状態になります。');
+    setList('topGrowthPoints', [
+      '数字を見る基礎を先に押さえる',
+      '学習後すぐに小さな分析メモへ変える',
+      '講師FBや現役コンサル相談で改善点を絞る'
+    ]);
+    setText('topGrowthNext', '上位診断後は、SWOTを見ながら相談テーマを1つに絞ります。');
+  }
+
+  function formatDiagnosisDate(d){
+    var pad = function(n){ return String(n).padStart(2, '0'); };
+    return d.getFullYear()+'.'+pad(d.getMonth()+1)+'.'+pad(d.getDate())+' '+pad(d.getHours())+':'+pad(d.getMinutes());
+  }
+
+  function updateDiagnosisTimestamp(kind){
+    var d = new Date();
+    var text = formatDiagnosisDate(d);
+    ['scoreDiagnosedAt','advancedDiagnosedAt','consultDiagnosedAt'].forEach(function(id){
+      var el = document.getElementById(id);
+      if(!el) return;
+      el.textContent = text;
+      el.setAttribute('datetime', d.toISOString());
+    });
+
+    var withCoach = kind === 'coach';
+    var scoreLabel = document.getElementById('scoreUpdateLabel');
+    if(scoreLabel){ scoreLabel.textContent = withCoach ? '講師FB込みで更新' : '上位診断で更新'; }
+
+    var completeLabel = document.getElementById('completeStatusLabel');
+    if(completeLabel){ completeLabel.textContent = withCoach ? '講師FBまでカルテに反映しました' : '上位診断が完了しました'; }
+
+    var consultStatus = document.getElementById('consultStatusText');
+    if(consultStatus){ consultStatus.textContent = withCoach ? '講師FB込みで相談できます' : 'FB依頼メモを作成できます'; }
+  }
+
+  function addTeacherFeedbackItem(text, meta){
+    var log = document.getElementById('tfLog');
+    if(!log || !text) return;
+    var empty = document.getElementById('tfEmpty');
+    if(empty){ empty.remove(); }
+    var item = document.createElement('div');
+    item.className = 'tf-item';
+    item.innerHTML = '<div class="tf-meta"></div><div class="tf-text"></div>';
+    item.querySelector('.tf-meta').textContent = meta;
+    item.querySelector('.tf-text').textContent = text;
+    log.appendChild(item);
+  }
+
+  function completeAdvancedDiagnosis(){
+    document.getElementById('swotStrengthPrimary').textContent =
+      getShortAnswer('advStrengthText', '文章にまとめる力がある');
+    document.getElementById('swotWeakPrimary').textContent =
+      getShortAnswer('advWeakText', '広告運用・データ分析の経験が少ない');
+    document.getElementById('swotGoalPrimary').textContent =
+      getShortAnswer('advGoalText', '広告・SNS運用を任せたい企業が多い');
+
+    var fb = document.getElementById('advFbText').value.trim();
+    var createBtn = document.querySelector('.adv-create-btn');
+    if(createBtn){
+      createBtn.disabled = true;
+      createBtn.textContent = '分析しています';
+    }
+    document.getElementById('advancedForm').style.display = 'none';
+    document.getElementById('advancedResults').style.display = 'none';
+    document.getElementById('advancedAnalyzing').style.display = 'block';
+    document.getElementById('advancedForm').style.display = 'none';
+    document.getElementById('ldxBody').style.display = 'block';
+    document.querySelector('.ldx-toggle').classList.add('open');
+    document.getElementById('ldxLabel').textContent = '分析中';
+    document.getElementById('ldxArrow').textContent = '−';
+
+    var steps = document.querySelectorAll('#advancedAnalysisSteps li');
+    steps.forEach(function(li){ li.classList.remove('done'); });
+    steps.forEach(function(li, i){
+      setTimeout(function(){ li.classList.add('done'); }, 420 + i*560);
+    });
+
+    var analyzing = document.getElementById('advancedAnalyzing');
+    if(analyzing){ analyzing.scrollIntoView({behavior:'smooth', block:'center'}); }
+
+    setTimeout(function(){
+      if(fb){
+        addTeacherFeedbackItem(fb, '入力メモ　本日');
+        document.body.classList.add('coach-fb-ready');
+      }
+
+      document.body.classList.add('advanced-ready');
+      updateTopDiagnosisFromAdvanced();
+      updateDiagnosisTimestamp(fb ? 'coach' : 'advanced');
+      document.getElementById('advancedAnalyzing').style.display = 'none';
+      document.getElementById('advancedResults').style.display = 'block';
+      document.querySelector('.ldx-toggle').classList.add('open');
+      document.getElementById('ldxLabel').textContent = '内訳を閉じる';
+      document.getElementById('ldxArrow').textContent = '−';
+      if(createBtn){
+        createBtn.disabled = false;
+        createBtn.textContent = 'SWOT分析を作成';
+      }
+
+      var target = document.getElementById('advancedResults');
+      if(target){ target.scrollIntoView({behavior:'smooth', block:'start'}); }
+    }, 2500);
+  }
+
+  function openConsultBox(){
+    var box = document.getElementById('consultBox');
+    box.classList.add('show');
+    var input = document.getElementById('consultInput');
+    if(input){ input.focus(); }
   }
   /* 講師フィードバックの追加（蓄積される様子を見せる） */
   function addFb(){
@@ -1291,16 +3986,13 @@
     var v = inp.value.trim();
     if(!v) return;
     var d = new Date();
-    var item = document.createElement('div');
-    item.className = 'tf-item';
-    item.innerHTML = '<div class="tf-meta">佐藤 講師　'+(d.getMonth()+1)+'/'+d.getDate()+'</div><div class="tf-text"></div>';
-    item.querySelector('.tf-text').textContent = v;
-    document.getElementById('tfLog').appendChild(item);
+    addTeacherFeedbackItem(v, '佐藤 講師　'+(d.getMonth()+1)+'/'+d.getDate());
+    document.body.classList.add('coach-fb-ready');
+    updateDiagnosisTimestamp('coach');
     inp.value = '';
   }
 
   // タスクのチェック＋ポイント加算
-  var ptTotal = 0;
   function toggleTask(el, pt){
     el.classList.toggle('done');
     if(el.classList.contains('done')){ ptTotal += pt; }
@@ -1308,6 +4000,8 @@
     if(ptTotal < 0) ptTotal = 0;
     document.getElementById('ptNow').textContent = ptTotal;
   }
+
+  renderJustTasks('120');
 </script>
 
 </body>
